@@ -1,4 +1,4 @@
-package org.example;
+package pis.group2;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
