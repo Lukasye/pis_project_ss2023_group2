@@ -45,7 +45,8 @@ public class playground {
             }
         });
 
-        resultStream.print("Average Speed");
+        averageVelocityStream.print("Average Speed");
+        resultStream.print("PETStream");
 
         env.execute();
     }
