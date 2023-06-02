@@ -1,7 +1,5 @@
 package pis.group2.PETLoader;
 
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -17,13 +15,16 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 public class PETLoader<T> {
-    private String Home;
-    private String ConfPath;
-    private String FileName;
-    private int size;
+    private String Home; // directory of the root
+    private String ConfPath; // directory of the Configuration file, input
+    private String FileName; // The name of the package
+    private String FunctionName; // The name of the PET methode
+    private int size; // How many PET are there for this kind of data type
     private ArrayList<Class> classes;
+    private Class[] ClassList;
     private Object CurrentPolicy;
     private Method process;
+    private Class PetClass;
 
     public PETLoader(String confPath, String Type, String id) throws Exception {
         JSONParser parser = new JSONParser();
@@ -33,33 +34,40 @@ public class PETLoader<T> {
             JSONObject jsonObject = (JSONObject) obj;
             Home = (String) jsonObject.get("HOMEDIR");
             JSONObject typeMethode = (JSONObject) jsonObject.get(Type);
+            size = typeMethode.size();
             typeMethode = (JSONObject) typeMethode.get(id);
             FileName = "lib/" + (String) typeMethode.get("FileName");
+            FunctionName = (String) typeMethode.get("FunctionName");
+            ClassList = parseClassString((ArrayList<String>) typeMethode.get("ConstructorParameter"));
         } catch (Exception e) {
             e.printStackTrace();
         }
         ConfPath = confPath;
-        System.out.println(FileName);
         classes = this.loadJarFile(FileName);
         int count = 0;
         for (Class c : classes){
-            if ("pis.group2.SpeedAnonymizer".equals(c.getName())) break;
+            if (FunctionName.equals(c.getName())) break;
             count ++;
         }
-        Class asd = classes.get(count);
-        System.out.println(asd.getName());
-
+        PetClass = classes.get(count);
     }
 
-    public void instantiate(int ID) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Class tmp_class = classes.get(0);
-        CurrentPolicy = tmp_class.getConstructor(null).newInstance();
-        process = tmp_class.getDeclaredMethod("action");
+    public void instantiate() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance();
+        process = PetClass.getDeclaredMethod("action");
         process.setAccessible(true);
     }
 
-    public void readConfig(){
-        // TODO: To be implemented
+    public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        int length = InputList.size();
+        Class[] TmpList = new Class[length];
+        for (int i = 0; i < length; i ++) {
+            Class TmpClass = (Class.forName(InputList.get(i)));
+            TmpClass = (Class) TmpClass.getField("TYPE").get(null);
+            System.out.println(TmpClass.isPrimitive());
+            TmpList[i] = TmpClass;
+        }
+        return TmpList;
     }
 
     public ArrayList<T> invoke(T input) throws InvocationTargetException, IllegalAccessException {
@@ -136,5 +144,6 @@ public class PETLoader<T> {
 
     public static void main(String[] args) throws Exception {
         PETLoader<Double> pl = new PETLoader<Double>("config/config.json", "SPEED", "0");
+        pl.instantiate();
     }
 }
