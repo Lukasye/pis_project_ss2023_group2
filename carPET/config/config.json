@@ -1,0 +1,24 @@
+{
+  "HOMEDIR": "carPET/",
+  "SPEED": {
+    "0": {
+      "FileName": "SpeedPET01-1.0-SNAPSHOT.jar",
+      "FunctionName":"pis.group2.SpeedAnonymizer",
+      "ConstructorParameter": ["double.class, double.class, double.class, Duration.class, double.class"],
+      "Default": [75.0, 83.0, 10.0, "Duration.ofSeconds(1L)", 2.5],
+      "FunctionParameter": ["Double.class"]
+    },"1": {
+      "FileName": "",
+      "FunctionName":"process",
+      "ConstructorParameter": [],
+      "FunctionParameter": [],
+      "Default": []
+    }
+  },
+  "LOCATION": {
+
+  },
+  "IMAGE": {
+
+  }
+}
