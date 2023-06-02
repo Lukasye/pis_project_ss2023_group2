@@ -65,6 +65,7 @@ public class PETLoader<T> {
             Class TmpClass = (Class.forName(InputList.get(i)));
             TmpClass = (Class) TmpClass.getField("TYPE").get(null);
             System.out.println(TmpClass.isPrimitive());
+            System.out.println(TmpClass);
             TmpList[i] = TmpClass;
         }
         return TmpList;
