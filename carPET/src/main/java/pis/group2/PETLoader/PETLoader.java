@@ -53,8 +53,12 @@ public class PETLoader<T> {
     }
 
     public void instantiate() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance();
-        process = PetClass.getDeclaredMethod("action");
+        Method[] methods = PetClass.getMethods();
+        for (Method asd : methods) {
+            System.out.println(asd.getName());
+        }
+        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance(75.0, 83.0, 10.0, 2.5);
+        process = PetClass.getMethod("process");
         process.setAccessible(true);
     }
 
