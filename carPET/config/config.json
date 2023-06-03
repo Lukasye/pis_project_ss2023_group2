@@ -9,7 +9,7 @@
         "java.lang.Double",
         "java.lang.Double"],
       "Default": [75.0, 83.0, 10.0, 2.5],
-      "FunctionParameter": ["Double.class"]
+      "FunctionParameter": ["java.lang.Double"]
     },"1": {
       "FileName": "",
       "FunctionName":"process",
