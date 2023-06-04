@@ -3,10 +3,7 @@ package pis.group2.PETLoader;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -160,9 +157,11 @@ public class PETLoader<T> {
         assert imgStream != null;
         byte[] testfileContent = imgStream.readAllBytes();
 
-        ArrayList<byte[]> invoke = pl_img.invoke(testfileContent);
-        for (int i = 0; i < 50; i++){
-            System.out.println(invoke.get(0)[i]);
-        }
+        ArrayList<byte[]> result = pl_img.invoke(testfileContent);
+
+		OutputStream out = new FileOutputStream("src/main/resources/result/test.jpg");
+		out.write(result.get(0));
+		out.flush();
+		out.close();
     }
 }
