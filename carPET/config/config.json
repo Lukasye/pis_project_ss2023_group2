@@ -22,6 +22,12 @@
 
   },
   "IMAGE": {
-
+    "0": {
+      "FileName": "ImagePET01-1.0-SNAPSHOT.jar",
+      "FunctionName":"pis.group2.ImageAnonymizer",
+      "ConstructorParameter": ["java.lang.String"],
+      "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py"],
+      "FunctionParameter": ["java.lang.Object"]
+    }
   }
 }

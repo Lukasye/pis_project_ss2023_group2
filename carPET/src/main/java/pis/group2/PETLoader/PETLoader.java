@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -146,9 +147,22 @@ public class PETLoader<T> {
     }
 
     public static void main(String[] args) throws Exception {
-        PETLoader<Double> pl = new PETLoader<Double>("config/config.json", "SPEED", 0);
-        pl.instantiate();
-        ArrayList<Double> result = pl.invoke(20.3);
-        System.out.println(result);
+        // For speed pet
+//        PETLoader<Double> pl = new PETLoader<Double>("config/config.json", "SPEED", 0);
+//        pl.instantiate();
+//        ArrayList<Double> result = pl.invoke(20.3);
+//        System.out.println(result);
+        // For image pet
+        PETLoader<byte[]> pl_img = new PETLoader<>("config/config.json", "IMAGE", 0);
+        pl_img.instantiate();
+
+        InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
+        assert imgStream != null;
+        byte[] testfileContent = imgStream.readAllBytes();
+
+        ArrayList<byte[]> invoke = pl_img.invoke(testfileContent);
+        for (int i = 0; i < 50; i++){
+            System.out.println(invoke.get(0)[i]);
+        }
     }
 }
