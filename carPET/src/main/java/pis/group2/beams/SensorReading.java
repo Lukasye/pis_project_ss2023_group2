@@ -1,20 +1,20 @@
 package pis.group2.beams;
 
 public class SensorReading {
-    private double timestamp;
-    private float latitude;
-    private float longitude;
-    private float altitude;
-    private float acc_x;
-    private float acc_y;
-    private float vel;
+    private Double timestamp;
+    private Double latitude;
+    private Double longitude;
+    private Double altitude;
+    private Double acc_x;
+    private Double acc_y;
+    private Double vel;
 
     private byte[] img;
 
     public SensorReading() {
     }
 
-    public SensorReading(double timestamp, float latitude, float longitude, float altitude, float acc_x, float acc_y, float vel) {
+    public SensorReading(Double timestamp, Double latitude, Double longitude, Double altitude, Double acc_x, Double acc_y, Double vel) {
         this.timestamp = timestamp;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -32,51 +32,51 @@ public class SensorReading {
         this.timestamp = timestamp;
     }
 
-    public float getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(float latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public float getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(float longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
-    public float getAltitude() {
+    public Double getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(float altitude) {
+    public void setAltitude(Double altitude) {
         this.altitude = altitude;
     }
 
-    public float getAcc_x() {
+    public Double getAcc_x() {
         return acc_x;
     }
 
-    public void setAcc_x(float acc_x) {
+    public void setAcc_x(Double acc_x) {
         this.acc_x = acc_x;
     }
 
-    public float getAcc_y() {
+    public Double getAcc_y() {
         return acc_y;
     }
 
-    public void setAcc_y(float acc_y) {
+    public void setAcc_y(Double acc_y) {
         this.acc_y = acc_y;
     }
 
-    public float getVel() {
+    public Double getVel() {
         return vel;
     }
 
-    public void setVel(float vel) {
+    public void setVel(Double vel) {
         this.vel = vel;
     }
 
@@ -101,8 +101,8 @@ public class SensorReading {
                 '}';
     }
 
-    public static float calculateVelocity(){
+    public static Double calculateVelocity(){
 
-        return 0.0F;
+        return 0.0D;
     }
 }

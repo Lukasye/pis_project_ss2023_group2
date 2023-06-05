@@ -4,7 +4,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -13,13 +12,15 @@ import java.util.ArrayList;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-public class PETLoader<T> {
+public class PETLoader<T> implements Serializable{
     private String Home; // directory of the root
+    private String Type;
     private String ConfPath; // directory of the Configuration file, input
     private String FileName; // The name of the package
     private String FunctionName; // The name of the PET methode
     private int size; // How many PET are there for this kind of data type
     private ArrayList<Class> classes;
+
     private Class[] ClassList;
     private Class[] FunctionParameter;
     private ArrayList<Object> Default;
@@ -29,6 +30,7 @@ public class PETLoader<T> {
 
     public PETLoader(String confPath, String Type, Integer id) throws Exception {
         JSONParser parser = new JSONParser();
+        this.Type = Type;
         try {
             Object obj = parser.parse(new FileReader(confPath));
             // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
@@ -91,6 +93,14 @@ public class PETLoader<T> {
         this.size = size;
     }
 
+    public String getType() {
+        return Type;
+    }
+
+    public void setType(String type) {
+        Type = type;
+    }
+
     // Returns an arraylist of class names in a JarInputStream
     private ArrayList<String> getClassNamesFromJar(JarInputStream jarFile) throws Exception {
         ArrayList<String> classNames = new ArrayList<>();
@@ -145,23 +155,23 @@ public class PETLoader<T> {
 
     public static void main(String[] args) throws Exception {
         // For speed pet
-//        PETLoader<Double> pl = new PETLoader<Double>("config/config.json", "SPEED", 0);
-//        pl.instantiate();
-//        ArrayList<Double> result = pl.invoke(20.3);
-//        System.out.println(result);
+        PETLoader<Double> pl = new PETLoader<Double>("config/PETconfig.json", "SPEED", 0);
+        pl.instantiate();
+        ArrayList<Double> result = pl.invoke(20.3);
+        System.out.println(result);
         // For image pet
-        PETLoader<byte[]> pl_img = new PETLoader<>("config/config.json", "IMAGE", 0);
-        pl_img.instantiate();
-
-        InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
-        assert imgStream != null;
-        byte[] testfileContent = imgStream.readAllBytes();
-
-        ArrayList<byte[]> result = pl_img.invoke(testfileContent);
-
-		OutputStream out = new FileOutputStream("src/main/resources/result/test.jpg");
-		out.write(result.get(0));
-		out.flush();
-		out.close();
+//        PETLoader<byte[]> pl_img = new PETLoader<>("config/PETconfig.json", "IMAGE", 0);
+//        pl_img.instantiate();
+//
+//        InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
+//        assert imgStream != null;
+//        byte[] testfileContent = imgStream.readAllBytes();
+//
+//        ArrayList<byte[]> result = pl_img.invoke(testfileContent);
+//
+//		OutputStream out = new FileOutputStream("src/main/resources/result/test.jpg");
+//		out.write(result.get(0));
+//		out.flush();
+//		out.close();
     }
 }

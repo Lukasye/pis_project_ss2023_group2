@@ -27,12 +27,12 @@ public class playground {
             public SensorReading map(String s) throws Exception {
                 String[] fields = s.split(",");
                 return new SensorReading(new Double(fields[0]),
-                        new Float(fields[1]),
-                        new Float(fields[2]),
-                        new Float(fields[3]),
-                        new Float(fields[12]),
-                        new Float(fields[13]),
-                        new Float(fields[9]));
+                        new Double(fields[1]),
+                        new Double(fields[2]),
+                        new Double(fields[3]),
+                        new Double(fields[12]),
+                        new Double(fields[13]),
+                        new Double(fields[9]));
             }
         });
 
