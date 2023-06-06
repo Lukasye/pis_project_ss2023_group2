@@ -2,6 +2,7 @@ package pis.group2.PETLoader;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import pis.group2.beams.SerializableMethod;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +28,7 @@ public class PETLoader<T> implements Serializable{
     private Object CurrentPolicy;
     private Method process;
     private Class PetClass;
+    private SerializableMethod<T> PETMethod;
 
     public PETLoader(String confPath, String Type, Integer id) throws Exception {
         JSONParser parser = new JSONParser();
@@ -61,6 +63,7 @@ public class PETLoader<T> implements Serializable{
         CurrentPolicy = PetClass.getConstructor(ClassList).newInstance(Default.toArray(new Object[Default.size()]));
         process = PetClass.getMethod("process", FunctionParameter);
         process.setAccessible(true);
+        PETMethod = new SerializableMethod<T>(process, CurrentPolicy);
     }
 
     public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
@@ -74,7 +77,12 @@ public class PETLoader<T> implements Serializable{
     }
 
     public ArrayList<T> invoke(T input) throws InvocationTargetException, IllegalAccessException {
-        return (ArrayList<T>) process.invoke(CurrentPolicy, input);
+//        return (ArrayList<T>) process.invoke(CurrentPolicy, input);
+        return PETMethod.invoke(input);
+    }
+
+    public SerializableMethod<T> getPETMethod() {
+        return PETMethod;
     }
 
     public String getHome() {
@@ -159,15 +167,17 @@ public class PETLoader<T> implements Serializable{
         pl.instantiate();
         ArrayList<Double> result = pl.invoke(20.3);
         System.out.println(result);
+
         // For image pet
-//        PETLoader<byte[]> pl_img = new PETLoader<>("config/PETconfig.json", "IMAGE", 0);
-//        pl_img.instantiate();
-//
-//        InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
-//        assert imgStream != null;
-//        byte[] testfileContent = imgStream.readAllBytes();
-//
-//        ArrayList<byte[]> result = pl_img.invoke(testfileContent);
+        PETLoader<byte[]> pl_img = new PETLoader<>("config/PETconfig.json", "IMAGE", 0);
+        pl_img.instantiate();
+
+        InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
+        assert imgStream != null;
+        byte[] testfileContent = imgStream.readAllBytes();
+
+        ArrayList<byte[]> result_img = pl_img.invoke(testfileContent);
+        System.out.println(result_img);
 //
 //		OutputStream out = new FileOutputStream("src/main/resources/result/test.jpg");
 //		out.write(result.get(0));

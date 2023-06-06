@@ -20,7 +20,6 @@ public class testPipeline {
     private final String confPath;
     private String PETconfpath;
     private ArrayList<String> PETType;
-    private HashMap<String, PETLoader<Object>> PETLoaders;
     private StreamExecutionEnvironment env;
 
     public testPipeline(String confPath) throws Exception {
@@ -39,17 +38,19 @@ public class testPipeline {
     }
 
     public void loadPET() throws Exception {
-        PETLoaders = new HashMap<String, PETLoader<Object>>();
-        for (String type: PETType){
-            PETLoader<Object> objectPETLoader = new PETLoader<>(PETconfpath, type, 0);
-            objectPETLoader.instantiate();
-            PETLoaders.put(type, objectPETLoader);
-        }
+        // TODO: implementation
+        System.out.printf("loadPET");
+//        PETLoaders = new HashMap<String, PETLoader<Object>>();
+//        for (String type: PETType){
+//            PETLoader<Object> objectPETLoader = new PETLoader<>(PETconfpath, type, 0);
+//            objectPETLoader.instantiate();
+//            PETLoaders.put(type, objectPETLoader);
+//        }
     }
 
-    public void buildPipeline(){
+    public void buildPipeline() throws Exception {
         env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(1);
+//        env.setParallelism(1);
 
         // Test Data
         String FilePath = "src/main/resources/PIS_data/gps_info.csv";
@@ -57,9 +58,10 @@ public class testPipeline {
 
         SingleOutputStreamOperator<SensorReading> sensorStream = inputStream.map(new PETUtils.toSensorReading());
 
-        SingleOutputStreamOperator<SensorReading> speedStream = sensorStream.map(new PETUtils.applyPET(PETLoaders.get("SPEED")));
+        SingleOutputStreamOperator<SensorReading> speedStream = sensorStream.map(
+                new PETUtils.applyPET(PETconfpath, "SPEED", 0));
 
-        sensorStream.print();
+        speedStream.print();
     }
 
     public void execute() throws Exception {
@@ -67,18 +69,20 @@ public class testPipeline {
     }
 
     public void test() throws InvocationTargetException, IllegalAccessException {
-        System.out.println(PETLoaders);
-        PETLoader<Object> objectPETLoader = PETLoaders.get("SPEED");
-        System.out.println(objectPETLoader.getHome());
-        System.out.println(objectPETLoader.getType());
-        ArrayList<Object> invoke = objectPETLoader.invoke(20.3);
-        System.out.println(invoke.get(0));
+        System.out.println("***************Test Start*********************");
+//        System.out.println(PETLoaders);
+//        PETLoader<Object> objectPETLoader = PETLoaders.get("SPEED");
+//        System.out.println(objectPETLoader.getHome());
+//        System.out.println(objectPETLoader.getType());
+//        ArrayList<Object> invoke = objectPETLoader.invoke(20.3);
+//        System.out.println(invoke.get(0));
+        System.out.println("***************Test End*********************");
     }
 
 
     public static void main(String[] args) throws Exception {
         testPipeline testPipeline = new testPipeline("config/Pipeconfig.json");
-        testPipeline.test();
+//        testPipeline.test();
         testPipeline.buildPipeline();
         testPipeline.execute();
     }

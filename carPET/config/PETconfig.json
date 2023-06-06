@@ -29,7 +29,7 @@
       "Description": "",
       "FunctionName":"pis.group2.ImageAnonymizer",
       "ConstructorParameter": ["java.lang.String"],
-      "Default": ["/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/enet/Main.py"],
+      "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py"],
       "FunctionParameter": ["java.lang.Object"]
     }
   }

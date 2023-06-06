@@ -1,4 +1,4 @@
-package pis.group2.algorithm;
+package pis.group2.playground;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -61,4 +61,6 @@ public class playground {
             return sumVelocity / sumNumber;
         }
     }
+
+
 }
