@@ -1,10 +1,12 @@
 package pis.group2.PETLoader;
 
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import pis.group2.beams.SerializableMethod;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -60,7 +62,21 @@ public class PETLoader<T> implements Serializable{
     }
 
     public void instantiate() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance(Default.toArray(new Object[Default.size()]));
+        Object[] objects = new Object[ClassList.length];
+        for (int i = 0; i < ClassList.length; i++) {
+            Class aClass = ClassList[i];
+            Object o = Default.get(i);
+            if (aClass.isInstance(o)) {
+                Object cast = aClass.cast(o);
+                objects[i] = cast;
+            } else {
+                Constructor declaredConstructor = aClass.getConstructor(String.class);
+                Object cast = declaredConstructor.newInstance(o.toString());
+                objects[i] = cast;
+            }
+        }
+        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance(objects);
+//        CurrentPolicy = PetClass.getConstructor(ClassList).newInstance(Default.toArray(new Object[Default.size()]));
         process = PetClass.getMethod("process", FunctionParameter);
         process.setAccessible(true);
         PETMethod = new SerializableMethod<T>(process, CurrentPolicy);
@@ -183,5 +199,12 @@ public class PETLoader<T> implements Serializable{
 //		out.write(result.get(0));
 //		out.flush();
 //		out.close();
+
+        //For location pet
+        PETLoader<Tuple2<Double, Double>> pl_loc = new PETLoader<>("config/PETconfig.json", "LOCATION", 1);
+        pl_loc.instantiate();
+
+        ArrayList<Tuple2<Double, Double>> invoke = pl_loc.invoke(new Tuple2<>(48.985771846331,8.3941997039792));
+        System.out.println(invoke);
     }
 }

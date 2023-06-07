@@ -2,6 +2,7 @@ package pis.group2.utils;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.SensorReading;
@@ -27,6 +28,19 @@ public class PETUtils implements Serializable {
         }
     }
 
+    public static class evaluationData implements MapFunction<SensorReading, SensorReading>{
+
+        private int count = 0;
+        @Override
+        public SensorReading map(SensorReading sensorReading) throws Exception {
+            count ++;
+            sensorReading.setPETPolicy("LOCATION", 1);
+            if (count > 20){
+                sensorReading.setPETPolicy("SPEED", 1);
+            }
+            return sensorReading;
+        }
+    }
 
     public static class applyPET<T> extends RichMapFunction<SensorReading, SensorReading> {
         private PETLoader<T> PETLoader;
@@ -34,10 +48,10 @@ public class PETUtils implements Serializable {
         private String confPath;
         private String Type;
 
-        public applyPET(String confPath, String Type, Integer id) {
+        public applyPET(String confPath, String Type) {
             this.confPath = confPath;
             this.Type = Type;
-            this.id = id;
+            this.id = 0;
         }
 
         @Override
@@ -48,11 +62,6 @@ public class PETUtils implements Serializable {
 ////            userCodeClassLoader.loadClass()
         }
 
-        public void resetPET(String Type, Integer id) throws Exception {
-            this.Type = Type;
-            this.id = id;
-            reloadPET();
-        }
 
         public void reloadPET() throws Exception {
             PETLoader = new  PETLoader<T>(confPath, Type, id);
@@ -62,9 +71,28 @@ public class PETUtils implements Serializable {
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
 //            String type = PET.getType();
-            Double vel = sensorReading.getVel();
-            ArrayList<Object> invoke = (ArrayList<Object>) PETLoader.invoke((T) vel);
-            sensorReading.setVel((Double) invoke.get(0));
+            if (id != sensorReading.getPETPolicy().get(Type)) {
+                id = sensorReading.getPETPolicy().get(Type);
+                System.out.println("PET changed!");
+                reloadPET();
+            }
+            switch (Type) {
+                case "SPEED":
+                    Double invoke_speed = (Double) PETLoader.invoke((T) sensorReading.getVel()).get(0);
+                    sensorReading.setVel(invoke_speed);
+                    break;
+                case "LOCATION":
+                    ArrayList<Tuple2<Double, Double>> invoke_pos = (ArrayList<Tuple2<Double, Double>>) PETLoader.invoke((T) sensorReading.getPosition());
+                    sensorReading.setLocation(invoke_pos);
+                    break;
+                case "Image":
+                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImg()).get(0);
+                    sensorReading.setImg(invoke_img);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + Type);
+            }
+//            ArrayList<Object> invoke = (ArrayList<Object>) PETLoader.invoke((T) data);
             return sensorReading;
         }
     }

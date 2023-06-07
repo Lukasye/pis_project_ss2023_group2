@@ -58,10 +58,13 @@ public class testPipeline {
 
         SingleOutputStreamOperator<SensorReading> sensorStream = inputStream.map(new PETUtils.toSensorReading());
 
-        SingleOutputStreamOperator<SensorReading> speedStream = sensorStream.map(
-                new PETUtils.applyPET(PETconfpath, "SPEED", 0));
+        SingleOutputStreamOperator<SensorReading> evaluatedStream = sensorStream.map(new PETUtils.evaluationData());
 
-        speedStream.print();
+        SingleOutputStreamOperator<SensorReading> speedStream = evaluatedStream.map(
+                new PETUtils.applyPET(PETconfpath, "SPEED"));
+
+        SingleOutputStreamOperator<SensorReading> locationStream = speedStream.map(new PETUtils.applyPET(PETconfpath, "LOCATION"));
+        locationStream.print();
     }
 
     public void execute() throws Exception {
