@@ -229,7 +229,7 @@ public class PETLoader<T> implements Serializable{
         }
 
         //For location pet
-        System.out.println("\n************ Image PET Testing ************");
+        System.out.println("\n************ Location PET Testing ************");
         PETLoader<Tuple2<Double, Double>> pl_loc = new PETLoader<>("config/PETconfig.json", "LOCATION", 0);
         System.out.println("Totally " + pl_loc.getSize() + " PETs");
         System.out.println("Input: " + new Tuple2<>(48.985771846331,8.3941997039792));
