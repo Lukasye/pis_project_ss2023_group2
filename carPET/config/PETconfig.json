@@ -22,13 +22,11 @@
   },
   "LOCATION": {
     "0": {
-      "FileName": "LocationPET01-1.0-SNAPSHOT.jar",
+      "FileName": "LocationPET00-1.0-SNAPSHOT.jar",
       "Description": "",
       "FunctionName":"pis.group2.LocationAnonymizer",
-      "ConstructorParameter": ["java.lang.Integer",
-        "java.lang.Integer",
-        "java.lang.Double"],
-      "Default": [3, 15, 10.0],
+      "ConstructorParameter": [],
+      "Default": [],
       "FunctionParameter": ["org.apache.flink.api.java.tuple.Tuple2"]
     },
     "1": {
@@ -44,19 +42,26 @@
   },
   "IMAGE": {
     "0": {
-      "FileName": "ImagePET01-1.0-SNAPSHOT.jar",
+      "FileName": "ImagePET00-1.0-SNAPSHOT.jar",
       "Description": "",
       "FunctionName":"pis.group2.ImageAnonymizer",
-      "ConstructorParameter": ["java.lang.String"],
-      "Default": ["/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/enet/Main.py"],
+      "ConstructorParameter": [],
+      "Default": [],
       "FunctionParameter": ["java.lang.Object"]
     },
     "1": {
       "FileName": "ImagePET01-1.0-SNAPSHOT.jar",
       "Description": "",
       "FunctionName":"pis.group2.ImageAnonymizer",
-      "ConstructorParameter": ["java.lang.String"],
-      "Default": ["/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/enet/Main.py"],
+      "ConstructorParameter": ["java.lang.String", "java.lang.Integer"],
+      "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py", 1],
+      "FunctionParameter": ["java.lang.Object"]
+    },"2": {
+      "FileName": "ImagePET01-1.0-SNAPSHOT.jar",
+      "Description": "",
+      "FunctionName":"pis.group2.ImageAnonymizer",
+      "ConstructorParameter": ["java.lang.String", "java.lang.Integer"],
+      "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py", 2],
       "FunctionParameter": ["java.lang.Object"]
     }
   }

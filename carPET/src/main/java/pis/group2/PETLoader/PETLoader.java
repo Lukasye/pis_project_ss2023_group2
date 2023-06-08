@@ -1,6 +1,7 @@
 package pis.group2.PETLoader;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.transformations.SideOutputTransformation;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import pis.group2.beams.SerializableMethod;
@@ -18,6 +19,8 @@ import java.util.jar.JarInputStream;
 public class PETLoader<T> implements Serializable{
     private String Home; // directory of the root
     private String Type;
+    private Integer id;
+    private String confPath;
     private String ConfPath; // directory of the Configuration file, input
     private String FileName; // The name of the package
     private String FunctionName; // The name of the PET methode
@@ -33,8 +36,15 @@ public class PETLoader<T> implements Serializable{
     private SerializableMethod<T> PETMethod;
 
     public PETLoader(String confPath, String Type, Integer id) throws Exception {
-        JSONParser parser = new JSONParser();
+        this.confPath = confPath;
         this.Type = Type;
+        this.id = id;
+        initialize();
+
+    }
+
+    public void initialize() throws Exception {
+        JSONParser parser = new JSONParser();
         try {
             Object obj = parser.parse(new FileReader(confPath));
             // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
@@ -95,6 +105,11 @@ public class PETLoader<T> implements Serializable{
     public ArrayList<T> invoke(T input) throws InvocationTargetException, IllegalAccessException {
 //        return (ArrayList<T>) process.invoke(CurrentPolicy, input);
         return PETMethod.invoke(input);
+    }
+
+    public void setId(Integer id) throws Exception {
+        this.id = id;
+        initialize();
     }
 
     public SerializableMethod<T> getPETMethod() {
@@ -179,32 +194,51 @@ public class PETLoader<T> implements Serializable{
 
     public static void main(String[] args) throws Exception {
         // For speed pet
+        System.out.println("************ Speed PET Testing ************");
         PETLoader<Double> pl = new PETLoader<Double>("config/PETconfig.json", "SPEED", 0);
-        pl.instantiate();
-        ArrayList<Double> result = pl.invoke(20.3);
-        System.out.println(result);
+        System.out.println("Totally " + pl.getSize() + " PETs");
+        System.out.println("Input: " + 20.3);
+        for (int i = 0; i < pl.getSize(); i++){
+            pl.setId(i);
+            pl.instantiate();
+            ArrayList<Double> result = pl.invoke(20.3);
+            System.out.println("PET " + i + ": " + result);
+        }
+
 
         // For image pet
+        System.out.println("\n************ Image PET Testing ************");
         PETLoader<byte[]> pl_img = new PETLoader<>("config/PETconfig.json", "IMAGE", 0);
-        pl_img.instantiate();
+        System.out.println("Totally " + pl_img.getSize() + " PETs");
 
         InputStream imgStream = PETLoader.class.getClassLoader().getResourceAsStream("testImage/byteString");
         assert imgStream != null;
         byte[] testfileContent = imgStream.readAllBytes();
+        System.out.println("Input: " + testfileContent);
 
-        ArrayList<byte[]> result_img = pl_img.invoke(testfileContent);
-        System.out.println(result_img);
-//
-//		OutputStream out = new FileOutputStream("src/main/resources/result/test.jpg");
-//		out.write(result.get(0));
-//		out.flush();
-//		out.close();
+        for (int i = 0; i < pl_img.getSize(); i++){
+            pl_img.setId(i);
+            pl_img.instantiate();
+            ArrayList<byte[]> result_img = pl_img.invoke(testfileContent);
+            System.out.println("PET " + i + ": " + result_img);
+
+            OutputStream out = new FileOutputStream("src/main/resources/result/test"+i+".jpg");
+            out.write(result_img.get(0));
+            out.flush();
+            out.close();
+        }
 
         //For location pet
-        PETLoader<Tuple2<Double, Double>> pl_loc = new PETLoader<>("config/PETconfig.json", "LOCATION", 1);
-        pl_loc.instantiate();
-
-        ArrayList<Tuple2<Double, Double>> invoke = pl_loc.invoke(new Tuple2<>(48.985771846331,8.3941997039792));
-        System.out.println(invoke);
+        System.out.println("\n************ Image PET Testing ************");
+        PETLoader<Tuple2<Double, Double>> pl_loc = new PETLoader<>("config/PETconfig.json", "LOCATION", 0);
+        System.out.println("Totally " + pl_loc.getSize() + " PETs");
+        System.out.println("Input: " + new Tuple2<>(48.985771846331,8.3941997039792));
+        for (int i = 0; i < pl_loc.getSize(); i++){
+            pl_loc.setId(i);
+            pl_loc.instantiate();
+            ArrayList<Tuple2<Double, Double>> invoke = pl_loc.invoke(new Tuple2<>(48.985771846331,8.3941997039792));
+            System.out.println("PET " + i + ": " + invoke);
+        }
+        System.out.println("\nTest Ended!");
     }
 }

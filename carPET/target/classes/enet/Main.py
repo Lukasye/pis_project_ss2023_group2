@@ -30,8 +30,8 @@ IMG_NORM_RATIO = 1 / 255.0
 
 @click.command()
 @click.option('--path', help='Path for the parent')
-def main(path):
-    mode: int = 1
+@click.option('--mode',type= int, help='mode for ImageAnonyumous')
+def main(path, mode):
     threshold: int = 7
 
     enet_neural_network: any
