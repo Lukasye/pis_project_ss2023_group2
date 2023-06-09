@@ -42,12 +42,22 @@ public class PETUtils implements Serializable {
         }
     }
 
+    /**
+     * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
+     * same type of data.
+     * @param <T> input data type
+     */
     public static class applyPET<T> extends RichMapFunction<SensorReading, SensorReading> {
         private PETLoader<T> PETLoader;
         private Integer id;
         private String confPath;
         private String Type;
 
+        /**
+         * Constructor method
+         * @param confPath: The configuration file, normally will be given in the conf file.
+         * @param Type: The PET data type ("IMAGE", "LOCATION", "SPEED")
+         */
         public applyPET(String confPath, String Type) {
             this.confPath = confPath;
             this.Type = Type;
@@ -57,23 +67,31 @@ public class PETUtils implements Serializable {
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            reloadPET();
+            // Load and initialise the PET method
+            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.initialize();
 //            ClassLoader userCodeClassLoader = getRuntimeContext().getUserCodeClassLoader();
 ////            userCodeClassLoader.loadClass()
         }
 
 
         public void reloadPET() throws Exception {
-            PETLoader = new  PETLoader<T>(confPath, Type, id);
+//            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.reloadPET(id);
             PETLoader.instantiate();
         }
 
+        /**
+         * Depends on the PET TYPE, process the data with the PETLoader
+         * @param sensorReading: input from the stream
+         * @return: output of the modified stream
+         * @throws Exception
+         */
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
-                System.out.println("PET changed!");
                 reloadPET();
             }
             switch (Type) {
@@ -92,7 +110,6 @@ public class PETUtils implements Serializable {
                 default:
                     throw new IllegalStateException("Unexpected value: " + Type);
             }
-//            ArrayList<Object> invoke = (ArrayList<Object>) PETLoader.invoke((T) data);
             return sensorReading;
         }
     }

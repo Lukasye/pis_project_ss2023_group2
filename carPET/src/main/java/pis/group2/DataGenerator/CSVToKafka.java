@@ -52,16 +52,6 @@ public class CSVToKafka {
         props.put("linger.ms", "1000");
 
 
-//        try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
-//            for (String[] line : csvData) {
-//                String value = String.join(",", line);
-//                ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, value);
-//                producer.send(record);
-//            }
-//        }
-
-
-
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
             int currentBatchSize = 0;
 
@@ -83,13 +73,8 @@ public class CSVToKafka {
                     }
                 }
             }
-
             producer.flush(); // 发送剩余的数据
         }
-
-
-
-
     }
 }
 

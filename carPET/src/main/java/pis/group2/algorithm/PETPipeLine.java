@@ -15,14 +15,20 @@ import java.util.Properties;
 public abstract class PETPipeLine {
     protected final String confPath;
     protected String PETconfpath;
+    protected String ImageOutputPath;
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
 
+    /**
+     * create the Pipeline and initialisation, read the configurations
+     * @param confPath: The path of the file "Pipeconfig.json"
+     * @throws Exception
+     */
     public PETPipeLine(String confPath) throws Exception {
         this.confPath = confPath;
         this.env = StreamExecutionEnvironment.getExecutionEnvironment();
         loadConfig();
-        loadPET();
+//        loadPET();
     }
 
     public void loadConfig() throws IOException, ParseException {
@@ -32,6 +38,7 @@ public abstract class PETPipeLine {
         JSONObject jsonObject = (JSONObject) obj;
         PETconfpath = (String) jsonObject.get("PET-CONF");
         PETType = (ArrayList<String>) jsonObject.get("PET-TYPE");
+        ImageOutputPath = (String) jsonObject.get("IMAGE-OUTPUT-PATH");
     }
 
     public void loadPET() throws Exception {
@@ -39,11 +46,20 @@ public abstract class PETPipeLine {
         System.out.printf("loadPET");
     }
 
+    /**
+     * Implement the Streaming process with source and sink
+     */
     abstract void buildPipeline();
 
+
+    /**
+     * Don't forget to run this!
+     * @throws Exception
+     */
     public void execute() throws Exception {
         env.execute();
     }
+
 
     public static FlinkKafkaConsumer011<String> createStringConsumerForTopic(
             String topic, String kafkaAddress, String kafkaGroup ) {

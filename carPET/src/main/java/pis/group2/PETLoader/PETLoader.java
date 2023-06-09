@@ -1,6 +1,7 @@
 package pis.group2.PETLoader;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonAlias;
 import org.apache.flink.streaming.api.transformations.SideOutputTransformation;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,6 +27,7 @@ public class PETLoader<T> implements Serializable{
     private String FunctionName; // The name of the PET methode
     private int size; // How many PET are there for this kind of data type
     private ArrayList<Class> classes;
+    private JSONObject PETLibrary;
 
     private Class[] ClassList;
     private Class[] FunctionParameter;
@@ -35,14 +37,23 @@ public class PETLoader<T> implements Serializable{
     private Class PetClass;
     private SerializableMethod<T> PETMethod;
 
+    /**
+     * @param confPath: The path of the file "petconfig.json"
+     * @param Type: The type of the Input data for PET ("IMAGE", "SPEED", "LOCATION")
+     * @param id: The ID of the PET that you want to apply.
+     * @throws Exception
+     */
     public PETLoader(String confPath, String Type, Integer id) throws Exception {
         this.confPath = confPath;
         this.Type = Type;
         this.id = id;
         initialize();
-
     }
 
+    /**
+     * Read the configuration file and load the information necessary for the instantiation.
+     * @throws Exception
+     */
     public void initialize() throws Exception {
         JSONParser parser = new JSONParser();
         try {
@@ -50,18 +61,31 @@ public class PETLoader<T> implements Serializable{
             // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
             JSONObject jsonObject = (JSONObject) obj;
             Home = (String) jsonObject.get("HOMEDIR");
-            JSONObject typeMethode = (JSONObject) jsonObject.get(Type);
-            size = typeMethode.size();
-            typeMethode = (JSONObject) typeMethode.get(id.toString());
-            FileName = "lib/" + (String) typeMethode.get("FileName");
-            FunctionName = (String) typeMethode.get("FunctionName");
-            ClassList = parseClassString((ArrayList<String>) typeMethode.get("ConstructorParameter"));
-            FunctionParameter = parseClassString((ArrayList<String>) typeMethode.get("FunctionParameter"));
-            Default = (ArrayList<Object>) typeMethode.get("Default");
+            PETLibrary = (JSONObject) jsonObject.get(Type);
+            size = PETLibrary.size();
+            quickLoad();
         } catch (Exception e) {
             e.printStackTrace();
         }
         ConfPath = confPath;
+        locateClass();
+    }
+
+    public void reloadPET(Integer newID) throws Exception {
+        if (newID < 0 ){
+            throw new IllegalArgumentException();
+        } else if (newID >= size) {
+            System.out.println("PET ID out of bound! Reloading PET Library");
+            initialize();
+        }else {
+            System.out.println("Policy switched to " + newID);
+            id = newID;
+            quickLoad();
+            locateClass();
+        }
+    }
+
+    public void locateClass() throws Exception {
         classes = this.loadJarFile(FileName);
         int count = 0;
         for (Class c : classes){
@@ -71,6 +95,14 @@ public class PETLoader<T> implements Serializable{
         PetClass = classes.get(count);
     }
 
+    /**
+     * Instantiate the class, convert the datatype and pass the constructor, and reflect the PET Method,
+     * finally wrap with a SerializableMethod.
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
     public void instantiate() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Object[] objects = new Object[ClassList.length];
         for (int i = 0; i < ClassList.length; i++) {
@@ -90,6 +122,15 @@ public class PETLoader<T> implements Serializable{
         process = PetClass.getMethod("process", FunctionParameter);
         process.setAccessible(true);
         PETMethod = new SerializableMethod<T>(process, CurrentPolicy);
+    }
+
+    public void quickLoad() throws NoSuchFieldException, ClassNotFoundException, IllegalAccessException {
+        JSONObject typeMethode = (JSONObject) PETLibrary.get(id.toString());
+        FileName = "lib/" + (String) typeMethode.get("FileName");
+        FunctionName = (String) typeMethode.get("FunctionName");
+        ClassList = parseClassString((ArrayList<String>) typeMethode.get("ConstructorParameter"));
+        FunctionParameter = parseClassString((ArrayList<String>) typeMethode.get("FunctionParameter"));
+        Default = (ArrayList<Object>) typeMethode.get("Default");
     }
 
     public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {

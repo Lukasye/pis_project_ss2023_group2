@@ -1,5 +1,7 @@
 {
   "PET-CONF": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/PETconfig.json",
   "PET-TYPE": ["SPEED"],
+  "TESTDATA-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data",
+  "IMAGE-OUTPUT-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/ImgOutput",
   "USER-CONF": ""
 }

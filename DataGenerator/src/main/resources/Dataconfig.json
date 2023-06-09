@@ -1,0 +1,5 @@
+{
+  "GPS-DATA": "gps_info.csv",
+  "IMG-DATA": "",
+  "BOOTSTRAPSERVER": "localhost:9092"
+}

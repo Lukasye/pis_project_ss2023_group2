@@ -18,15 +18,13 @@ public class testPipeline extends PETPipeLine{
     @Override
     void buildPipeline() {
 
-        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic("test-data",
-                "localhost:9092", "test-consumer-group");
+//        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic("test-data",
+//                "localhost:9092", "test-consumer-group");
+//        DataStreamSource<String> inputStream = env.addSource(sensorDataConsumer);
 
-        DataStreamSource<String> inputStream = env.addSource(sensorDataConsumer);
+        String FilePath = "src/main/resources/PIS_data/gps_info.csv";
+        DataStreamSource<String> inputStream = env.readTextFile(FilePath);
 
-
-//        String FilePath = "src/main/resources/PIS_data/gps_info.csv";
-//        DataStreamSource<String> inputStream = env.readTextFile(FilePath);
-//
         SingleOutputStreamOperator<SensorReading> sensorStream = inputStream.map(new PETUtils.toSensorReading());
 
         SingleOutputStreamOperator<SensorReading> evaluatedStream = sensorStream.map(new PETUtils.evaluationData());
@@ -39,9 +37,9 @@ public class testPipeline extends PETPipeLine{
     }
     public static void main(String[] args) throws Exception {
         testPipeline testPipeline = new testPipeline("config/Pipeconfig.json");
-//        testPipeline.test();
         testPipeline.buildPipeline();
         testPipeline.execute();
+
     }
 
 
