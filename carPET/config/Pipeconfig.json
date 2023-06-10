@@ -1,7 +1,11 @@
 {
-  "PET-CONF": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/PETconfig.json",
-  "PET-TYPE": ["SPEED"],
+  "PET-CONF": "config/PETconfig.json",
+  "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
   "TESTDATA-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data",
-  "IMAGE-OUTPUT-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/ImgOutput",
-  "USER-CONF": ""
+  "IMAGE-OUTPUT-PATH": "src/main/resources/result/ImgOutput/",
+  "USER-CONF": "config/Userconfig.json",
+
+  "BOOTSTRAP-SERVER": "192.168.1.13:9092",
+  "GROUP-ID": "test-consumer-group",
+  "FILE-EXTENSION": "jpg"
 }

@@ -2,6 +2,8 @@ package pis.group2.algorithm;
 
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
+import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -9,6 +11,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -16,6 +19,10 @@ public abstract class PETPipeLine {
     protected final String confPath;
     protected String PETconfpath;
     protected String ImageOutputPath;
+    protected String BOOTSTRAPSERVER;
+    protected String GROUPID;
+    protected String FILEEXTENSION;
+    protected Properties kafkaProperty = new Properties();
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
 
@@ -28,7 +35,6 @@ public abstract class PETPipeLine {
         this.confPath = confPath;
         this.env = StreamExecutionEnvironment.getExecutionEnvironment();
         loadConfig();
-//        loadPET();
     }
 
     public void loadConfig() throws IOException, ParseException {
@@ -39,11 +45,11 @@ public abstract class PETPipeLine {
         PETconfpath = (String) jsonObject.get("PET-CONF");
         PETType = (ArrayList<String>) jsonObject.get("PET-TYPE");
         ImageOutputPath = (String) jsonObject.get("IMAGE-OUTPUT-PATH");
-    }
-
-    public void loadPET() throws Exception {
-        // TODO: implementation
-        System.out.printf("loadPET");
+        BOOTSTRAPSERVER = (String) jsonObject.get("BOOTSTRAP-SERVER");
+        GROUPID = (String) jsonObject.get("GROUP-ID");
+        kafkaProperty.setProperty("bootstrap.servers", BOOTSTRAPSERVER);
+        kafkaProperty.setProperty("group.id", GROUPID);
+        FILEEXTENSION = (String) jsonObject.get("FILE-EXTENSION");
     }
 
     /**
@@ -72,5 +78,6 @@ public abstract class PETPipeLine {
 
         return consumer;
     }
+
 
 }

@@ -4,15 +4,24 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.core.io.SimpleVersionedSerializer;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.SensorReading;
+import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 import pis.group2.beams.SerializableMethod;
 
-import java.io.Serializable;
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class PETUtils implements Serializable {
+
     public static class toSensorReading implements MapFunction<String, SensorReading>{
 
         @Override
@@ -25,6 +34,16 @@ public class PETUtils implements Serializable {
                     new Double(fields[12]),
                     new Double(fields[13]),
                     new Double(fields[9]));
+        }
+    }
+
+    public static class addImageToReading implements MapFunction<byte[], SensorReading>{
+
+        @Override
+        public SensorReading map(byte[] bytes) throws Exception {
+            SensorReading tmp = new SensorReading();
+            tmp.setImg(bytes);
+            return tmp;
         }
     }
 
@@ -103,7 +122,7 @@ public class PETUtils implements Serializable {
                     ArrayList<Tuple2<Double, Double>> invoke_pos = (ArrayList<Tuple2<Double, Double>>) PETLoader.invoke((T) sensorReading.getPosition());
                     sensorReading.setLocation(invoke_pos);
                     break;
-                case "Image":
+                case "IMAGE":
                     byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImg()).get(0);
                     sensorReading.setImg(invoke_img);
                     break;
@@ -113,4 +132,54 @@ public class PETUtils implements Serializable {
             return sensorReading;
         }
     }
+
+    public static class saveDataAsText implements SinkFunction<SensorReading>{
+        private final String OutputPath;
+
+        public saveDataAsText(String path){
+            this.OutputPath = path;
+        }
+
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+            try (PrintWriter out = new PrintWriter(OutputPath + value.getTimestamp())) {
+                out.println(value);
+            }
+        }
+    }
+
+    public static class saveDataAsImage implements SinkFunction<SensorReading>{
+        private final String OutputPath;
+        private Integer counter = 0;
+
+        public saveDataAsImage(String path){
+            this.OutputPath = path;
+        }
+
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+//            try(FileOutputStream fos = new FileOutputStream(
+//                    OutputPath + counter + ".png")){
+//                counter ++;
+//                System.out.println(counter);
+//                fos.write(value.getImg());
+//            }
+
+            System.out.println(value.getImg());
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
+                System.out.println(bais);
+                BufferedImage image = ImageIO.read(bais);
+
+                String filePath = OutputPath + counter + ".png";
+
+                ImageIO.write(image, "png", new File(filePath));
+
+            } catch (IOException e) {
+                System.out.println("Error writing image file: " + e.getMessage());
+            }
+        }
+    }
+
+
+
 }

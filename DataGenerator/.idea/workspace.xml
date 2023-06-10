@@ -5,33 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="be341437-402d-423d-851f-641c841bfdb5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/pis/group2/img2Kafka.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/pis/group2/sth2Kafka.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/pis/group2/usr2Kafka.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/Dataconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/gps_info.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/org/example/AppTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../carPET/config/Userconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/DataGenerator/Data2Kafka.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/demoPipeLine.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../carPET/src/main/resources/PIS_data/image_preprocessing_resize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carPET/carPET.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../carPET/config/Pipeconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/config/Pipeconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/DataGenerator/CSVToKafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/DataGenerator/CSVToKafka.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/PETLoader/PETLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/PETLoader/PETLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/PETLoader/PETProcess.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/PETLoader/PETProcess.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/PETPipeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/PETPipeLine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/demoPipeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/demoPipeLine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/testPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/testPipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/playground/playground.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/utils/PETUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/utils/PETUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/PETLoader/PETLoader.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/PETLoader/PETLoader.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/algorithm/testPipeline.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/algorithm/testPipeline.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/utils/PETUtils.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/utils/PETUtils.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +32,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="2QxshU42HpsEfPXGaEU8fWfeiPU" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -61,11 +47,12 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/lukasye/Projects/pis_project_ss2023_group2/DataGenerator/pom.xml",
+    "last_opened_file_path": "D:/Projects/pis_project_ss2023_group2/DataGenerator/pom.xml",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.2",
@@ -82,7 +69,20 @@
       <recent name="pis.group2" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.Consumer">
+    <configuration name="Consumer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="pis.group2.Consumer" />
+      <module name="DataGenerator" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="pis.group2.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="UserInterface" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="pis.group2.UserInterface" />
       <module name="DataGenerator" />
@@ -98,6 +98,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Consumer" />
         <item itemvalue="Application.UserInterface" />
       </list>
     </recent_temporary>
@@ -112,6 +113,8 @@
       <updated>1686306687474</updated>
       <workItem from="1686306688924" duration="2595000" />
       <workItem from="1686309397672" duration="1968000" />
+      <workItem from="1686343224182" duration="647000" />
+      <workItem from="1686385955410" duration="2348000" />
     </task>
     <servers />
   </component>
