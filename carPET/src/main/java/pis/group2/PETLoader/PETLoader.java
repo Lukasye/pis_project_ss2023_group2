@@ -78,7 +78,7 @@ public class PETLoader<T> implements Serializable{
             System.out.println("PET ID out of bound! Reloading PET Library");
             initialize();
         }else {
-            System.out.println("Policy switched to " + newID);
+            System.out.println(Type + " Policy switched to " + newID);
             id = newID;
             quickLoad();
             locateClass();

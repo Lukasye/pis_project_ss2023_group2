@@ -2,6 +2,7 @@ package pis.group2;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 
+import java.io.IOException;
 import java.util.Properties;
 
 public abstract class sth2Kafka<T> {
@@ -16,19 +17,19 @@ public abstract class sth2Kafka<T> {
         DataPath = dataPath;
         this.BOOTSTRAP_SERVERS = BOOTSTRAP_SERVERS;
         initialize();
+        loadData();
     }
 
     public void initialize(){
         properties = new Properties();
         properties.put("bootstrap.servers", BOOTSTRAP_SERVERS);
         properties.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-
-        producer = new KafkaProducer<>(properties);
+//        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+//        properties.put("value.serializer","org.apache.kafka.common.serialization.ByteArraySerializer");
     }
 
     protected abstract void loadData();
 
-    protected abstract void sendData();
+    protected abstract void sendData() throws IOException;
 
 }
