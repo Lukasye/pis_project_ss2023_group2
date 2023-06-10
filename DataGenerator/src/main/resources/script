@@ -1,0 +1,6 @@
+# Start Script
+run 10
+delayrun 10 1
+write HelloWorld!
+run 10
+delayrun 10 1

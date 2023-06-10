@@ -21,6 +21,8 @@ public class data2Kafka extends sth2Kafka<String> {
 
     public data2Kafka(String BOOTSTRAP_SERVERS, String dataPath) {
         super(TOPIC_NAME, BOOTSTRAP_SERVERS, dataPath);
+        properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        producer = new KafkaProducer<>(properties);
     }
 
     @Override
@@ -55,7 +57,7 @@ public class data2Kafka extends sth2Kafka<String> {
 
     private byte[] dataProcessing(String[] line){
         String value = String.join(",", line);
-        ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, value);
+        ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, "gps",value);
         producer.send(record);
 
         return value.getBytes(StandardCharsets.UTF_8);
