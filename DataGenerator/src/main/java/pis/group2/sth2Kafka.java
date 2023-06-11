@@ -12,7 +12,7 @@ public abstract class sth2Kafka<T> {
     protected Properties properties;
     protected KafkaProducer<String, T> producer;
 
-    public sth2Kafka(String topic, String BOOTSTRAP_SERVERS, String dataPath) {
+    public sth2Kafka(String topic, String BOOTSTRAP_SERVERS, String dataPath) throws IOException {
         Topic = topic;
         DataPath = dataPath;
         this.BOOTSTRAP_SERVERS = BOOTSTRAP_SERVERS;
@@ -28,7 +28,7 @@ public abstract class sth2Kafka<T> {
 //        properties.put("value.serializer","org.apache.kafka.common.serialization.ByteArraySerializer");
     }
 
-    protected abstract void loadData();
+    protected abstract void loadData() throws IOException;
 
     protected abstract void sendData() throws IOException;
 

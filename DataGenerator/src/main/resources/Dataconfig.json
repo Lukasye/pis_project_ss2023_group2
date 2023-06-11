@@ -1,5 +1,5 @@
 {
   "GPS-DATA": "src/main/resources/gps_info.csv",
-  "IMG-DATA": "/Users/lukasye/Datasets/SITTI930/img",
+  "IMG-DATA": "/Users/lukasye/Datasets/SITTI930/img_resize",
   "BOOTSTRAPSERVER": "localhost:9092"
 }

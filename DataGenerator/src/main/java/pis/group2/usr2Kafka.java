@@ -14,7 +14,7 @@ public class usr2Kafka extends sth2Kafka<String> {
     private static final String TOPIC_NAME = "test-user-input";
     private String Command;
 
-    public usr2Kafka(String BOOTSTRAP_SERVERS) {
+    public usr2Kafka(String BOOTSTRAP_SERVERS) throws IOException {
         super(TOPIC_NAME, BOOTSTRAP_SERVERS, "");
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producer = new KafkaProducer<>(properties);

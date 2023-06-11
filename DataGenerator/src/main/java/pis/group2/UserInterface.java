@@ -17,7 +17,7 @@ public class UserInterface {
     private final data2Kafka data2Kafka;
     private final usr2Kafka usr2Kafka;
     private final img2Kafka img2Kafka;
-    public UserInterface(String ConfPath){
+    public UserInterface(String ConfPath) throws IOException {
         this.ConfPath = ConfPath;
         loadConfig();
         data2Kafka = new data2Kafka(BOOTSTRAPSERVER, GPSData);

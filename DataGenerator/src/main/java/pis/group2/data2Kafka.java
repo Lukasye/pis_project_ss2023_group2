@@ -19,7 +19,7 @@ public class data2Kafka extends sth2Kafka<String> {
     private Integer size;
     private Integer currentBatchSize = 0;
 
-    public data2Kafka(String BOOTSTRAP_SERVERS, String dataPath) {
+    public data2Kafka(String BOOTSTRAP_SERVERS, String dataPath) throws IOException {
         super(TOPIC_NAME, BOOTSTRAP_SERVERS, dataPath);
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producer = new KafkaProducer<>(properties);

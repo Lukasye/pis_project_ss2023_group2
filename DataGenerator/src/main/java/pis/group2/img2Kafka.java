@@ -5,9 +5,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,14 +17,14 @@ public class img2Kafka extends sth2Kafka<byte[]> {
     private Integer size;
     private List<File> orderedFiles;
 
-    public img2Kafka(String BOOTSTRAP_SERVERS, String dataPath) {
+    public img2Kafka(String BOOTSTRAP_SERVERS, String dataPath) throws IOException {
         super(TOPIC_NAME, BOOTSTRAP_SERVERS, dataPath);
         properties.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
         producer = new KafkaProducer<>(properties);
     }
 
     @Override
-    protected void loadData() {
+    protected void loadData() throws IOException {
         // Read PNG image files from the folder
         File folder = new File(DataPath);
         File[] imageFiles = folder.listFiles();
@@ -35,9 +33,18 @@ public class img2Kafka extends sth2Kafka<byte[]> {
         // Sort the image files based on file name for ordered processing
         if (imageFiles != null) {
             orderedFiles.addAll(Arrays.asList(imageFiles));
+//            for (File image: imageFiles){
+//                orderedFiles.add(loadSingleImage(image));
+//            }
             orderedFiles.sort(Comparator.comparing(img2Kafka::getNumericOrder));
         }
         size = orderedFiles.size();
+    }
+
+    private byte[] loadSingleImage(File file) throws IOException {
+        InputStream imgStream = new FileInputStream(file);
+        assert imgStream != null;
+        return imgStream.readAllBytes();
     }
 
     @Override
@@ -48,17 +55,19 @@ public class img2Kafka extends sth2Kafka<byte[]> {
             return;
         }
 //        System.out.println(orderedFiles.get(pointer));
-        BufferedImage image = ImageIO.read(orderedFiles.get(pointer));
+//        BufferedImage image = ImageIO.read(orderedFiles.get(pointer));
+        byte[] image = loadSingleImage(orderedFiles.get(pointer));
         pointer++;
 
         // Convert image to byte array
-        ByteArrayOutputStream by_img = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", by_img);
-        byte[] imageData = by_img.toByteArray();
+//        ByteArrayOutputStream by_img = new ByteArrayOutputStream();
+//        ImageIO.write(image, "jpg", by_img);
+//        byte[] imageData = by_img.toByteArray();
 
         // Publish image data to Kafka
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(TOPIC_NAME, "image-key", imageData);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(TOPIC_NAME, "image-key", image);
         producer.send(record);
+        System.out.println(orderedFiles.get(pointer));
 
     }
 
