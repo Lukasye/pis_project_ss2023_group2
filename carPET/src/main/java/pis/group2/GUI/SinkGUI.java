@@ -12,7 +12,7 @@ public class SinkGUI extends JFrame implements ActionListener {
     private final JTextArea LocationInfo;
     private final JTextArea GeneralInfo;
 
-    SinkGUI(){
+    public SinkGUI(){
         // Initialize
         this.setTitle("FlinkDataSink");
         this.setResizable(false);
@@ -64,6 +64,13 @@ public class SinkGUI extends JFrame implements ActionListener {
     public void addImage(String path){
         ImageIcon Image = new ImageIcon(path);
         Camera.setIcon(Image);
+    }
+
+    public void addImageFromByteArray(byte[] bytes){
+        ImageIcon Image = new ImageIcon(bytes);
+        System.out.println(Image);
+        Camera.setIcon(Image);
+
     }
 
     public void addGeneralInfo(String content){

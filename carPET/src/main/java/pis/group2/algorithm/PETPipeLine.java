@@ -23,6 +23,7 @@ public abstract class PETPipeLine {
     protected String GROUPID;
     protected String FILEEXTENSION;
     protected Properties kafkaProperty = new Properties();
+    protected Properties kafkaPropertyImg = new Properties();
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
 
@@ -49,6 +50,9 @@ public abstract class PETPipeLine {
         GROUPID = (String) jsonObject.get("GROUP-ID");
         kafkaProperty.setProperty("bootstrap.servers", BOOTSTRAPSERVER);
         kafkaProperty.setProperty("group.id", GROUPID);
+        kafkaPropertyImg.setProperty("bootstrap.servers", BOOTSTRAPSERVER);
+        kafkaPropertyImg.setProperty("group.id", GROUPID);
+        kafkaPropertyImg.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         FILEEXTENSION = (String) jsonObject.get("FILE-EXTENSION");
     }
 

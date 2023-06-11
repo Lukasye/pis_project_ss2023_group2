@@ -2,10 +2,12 @@ package pis.group2.utils;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import pis.group2.GUI.SinkGUI;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.SensorReading;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
@@ -14,6 +16,7 @@ import pis.group2.beams.SerializableMethod;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -150,9 +153,11 @@ public class PETUtils implements Serializable {
 
     public static class saveDataAsImage implements SinkFunction<SensorReading>{
         private final String OutputPath;
+        private final String DataType;
         private Integer counter = 0;
 
-        public saveDataAsImage(String path){
+        public saveDataAsImage(String path, String Datatype){
+            this.DataType = Datatype;
             this.OutputPath = path;
         }
 
@@ -169,10 +174,10 @@ public class PETUtils implements Serializable {
             try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
                 System.out.println(bais);
                 BufferedImage image = ImageIO.read(bais);
+                counter ++;
+                String filePath = OutputPath + counter + "." + DataType;
 
-                String filePath = OutputPath + counter + ".png";
-
-                ImageIO.write(image, "png", new File(filePath));
+                ImageIO.write(image, DataType, new File(filePath));
 
             } catch (IOException e) {
                 System.out.println("Error writing image file: " + e.getMessage());
@@ -181,5 +186,43 @@ public class PETUtils implements Serializable {
     }
 
 
+    public static class ReadByteAsStream extends AbstractDeserializationSchema<byte[]>{
+
+        @Override
+        public byte[] deserialize(byte[] bytes) throws IOException {
+            return bytes;
+        }
+    }
+
+    public static class showInGUI implements SinkFunction<SensorReading>{
+        private final SinkGUI GUI;
+
+        public showInGUI(){
+            this.GUI = new SinkGUI();
+        }
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+            if (value.getPosition() == null){
+
+                SwingUtilities.invokeAndWait(()->{
+                    GUI.addImageFromByteArray(value.getImg());
+                });
+
+            }
+        }
+    }
+
+    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
+            System.out.println(bais);
+            BufferedImage image = ImageIO.read(bais);
+            String filePath = OutputPath + counter + "." + DataType;
+
+            ImageIO.write(image, DataType, new File(filePath));
+
+        } catch (IOException e) {
+            System.out.println("Error writing image file: " + e.getMessage());
+        }
+    }
 
 }

@@ -48,6 +48,9 @@ public class SensorReading {
     }
 
     public Tuple2<Double, Double> getPosition(){
+        if (location == null){
+            return null;
+        }
         return location.get(0);
     }
 
