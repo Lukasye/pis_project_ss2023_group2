@@ -29,8 +29,11 @@ public class testPipeline{
 
                 SingleOutputStreamOperator<SensorReading> ImageSensorReading = imageSource.map(new PETUtils.addImageToReading());
 
-                SingleOutputStreamOperator<SensorReading> outputStream = ImageSensorReading.map(
+                SingleOutputStreamOperator<SensorReading> evaluatedStream = ImageSensorReading.map(new PETUtils.evaluationData());
+
+                SingleOutputStreamOperator<SensorReading> outputStream = evaluatedStream.map(
                         new PETUtils.applyPET<byte[]>(PETconfpath, "IMAGE"));
+
 
 //                outputStream.addSink(new PETUtils.saveDataAsImage(ImageOutputPath, FILEEXTENSION));
                 outputStream.addSink(new PETUtils.showInGUI());

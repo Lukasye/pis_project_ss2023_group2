@@ -17,7 +17,7 @@ public class SinkGUI extends JFrame implements ActionListener {
         this.setTitle("FlinkDataSink");
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(1400, 600);
+        this.setSize(1400, 620);
         this.setLayout(null);
         this.getContentPane().setBackground(new Color(0Xffffff));
 
@@ -68,8 +68,9 @@ public class SinkGUI extends JFrame implements ActionListener {
 
     public void addImageFromByteArray(byte[] bytes){
         ImageIcon Image = new ImageIcon(bytes);
-        System.out.println(Image);
         Camera.setIcon(Image);
+        this.setVisible(false);
+        this.setVisible(true);
 
     }
 

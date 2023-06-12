@@ -57,6 +57,7 @@ public class PETUtils implements Serializable {
         public SensorReading map(SensorReading sensorReading) throws Exception {
             count ++;
             sensorReading.setPETPolicy("LOCATION", 1);
+            sensorReading.setPETPolicy("IMAGE", 1);
             if (count > 20){
                 sensorReading.setPETPolicy("SPEED", 1);
             }
