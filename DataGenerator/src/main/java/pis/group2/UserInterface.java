@@ -87,7 +87,15 @@ public class UserInterface {
                 System.out.println("New usr meg published!");
                 break;
             case "script":
-                runScript("src/main/resources/script");
+                if (elements.length != 2) {
+                    System.out.println("Invalid 'write' argument!");
+                    break;
+                }
+                command = elements[1];
+                runScript("src/main/resources/scripts/" + command);
+            case "reset":
+                data2Kafka.reset();
+                img2Kafka.reset();
             default:
                 System.out.println("Not a valid command!");
         }

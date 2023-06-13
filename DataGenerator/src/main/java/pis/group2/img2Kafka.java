@@ -71,6 +71,10 @@ public class img2Kafka extends sth2Kafka<byte[]> {
 
     }
 
+    public void reset(){
+        this.pointer = 0;
+    }
+
     private static int getNumericOrder(File file) {
         String fileName = file.getName();
         String numericPart = fileName.replaceAll("[^0-9]", "");

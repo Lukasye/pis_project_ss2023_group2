@@ -5,17 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="be341437-402d-423d-851f-641c841bfdb5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/GUI/guiplayground.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/config/Pipeconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/config/Pipeconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/GUI/SinkGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/GUI/SinkGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/PETPipeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/PETPipeLine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/testPipeline.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/algorithm/testPipeline.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/beams/SensorReading.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/beams/SensorReading.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/utils/PETUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/src/main/java/pis/group2/utils/PETUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/algorithm/testPipeline.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/algorithm/testPipeline.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/beams/SensorReading.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/beams/SensorReading.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/utils/PETUtils.class" beforeDir="false" afterPath="$PROJECT_DIR$/../carPET/target/classes/pis/group2/utils/PETUtils.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/img2Kafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/img2Kafka.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/script" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/scripts/script" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,13 +60,29 @@
       <recent name="$PROJECT_DIR$/src/main/resources" />
       <recent name="$PROJECT_DIR$/src/main/java/pis/group2" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/scripts" />
+    </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="pis.group2" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Consumer">
+  <component name="RunManager" selected="Application.UserInterface">
     <configuration name="Consumer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="pis.group2.Consumer" />
+      <module name="DataGenerator" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="pis.group2.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="KafkaConsumerExample" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="pis.group2.KafkaConsumerExample" />
       <module name="DataGenerator" />
       <extension name="coverage">
         <pattern>
@@ -99,8 +109,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Consumer" />
         <item itemvalue="Application.UserInterface" />
+        <item itemvalue="Application.KafkaConsumerExample" />
+        <item itemvalue="Application.Consumer" />
       </list>
     </recent_temporary>
   </component>
@@ -117,6 +128,8 @@
       <workItem from="1686343224182" duration="647000" />
       <workItem from="1686385955410" duration="2348000" />
       <workItem from="1686501358531" duration="604000" />
+      <workItem from="1686586093737" duration="1551000" />
+      <workItem from="1686638849060" duration="3569000" />
     </task>
     <servers />
   </component>

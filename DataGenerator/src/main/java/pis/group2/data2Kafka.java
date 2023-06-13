@@ -55,6 +55,10 @@ public class data2Kafka extends sth2Kafka<String> {
         }
     }
 
+    public void reset(){
+        this.pointer = 0;
+    }
+
     private byte[] dataProcessing(String[] line){
         String value = String.join(",", line);
         ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, "gps",value);
