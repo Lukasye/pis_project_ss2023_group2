@@ -1,5 +1,6 @@
 package pis.group2.utils;
 
+import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
@@ -198,8 +199,8 @@ public class PETUtils implements Serializable {
     public static class showInGUI implements SinkFunction<SensorReading>{
         private final SinkGUI GUI;
 
-        public showInGUI(){
-            this.GUI = new SinkGUI();
+        public showInGUI(SinkGUI gui){
+            this.GUI = gui;
         }
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
@@ -223,6 +224,24 @@ public class PETUtils implements Serializable {
 
         } catch (IOException e) {
             System.out.println("Error writing image file: " + e.getMessage());
+        }
+    }
+
+
+    public static class sendDataToGUI implements SinkFunction<SensorReading>{
+        private final SinkGUI GUI;
+
+        public sendDataToGUI(SinkGUI GUI) {
+            this.GUI = GUI;
+        }
+
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+            SinkFunction.super.invoke(value, context);
+            this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
+            this.GUI.addLocationInfo(String.valueOf(value.getPosition()));
+            this.GUI.addSpeedInfo(String.valueOf(value.getVel()));
+//            this.GUI.foolRefresh();
         }
     }
 

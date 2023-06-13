@@ -58,7 +58,7 @@ public class SinkGUI extends JFrame implements ActionListener {
         this.add(LocationInfo);
         this.add(SpeedInfo);
 
-        this.setVisible(true);
+//        this.setVisible(true);
     }
 
     public void addImage(String path){
@@ -69,9 +69,12 @@ public class SinkGUI extends JFrame implements ActionListener {
     public void addImageFromByteArray(byte[] bytes){
         ImageIcon Image = new ImageIcon(bytes);
         Camera.setIcon(Image);
+        foolRefresh();
+    }
+
+    public void foolRefresh(){
         this.setVisible(false);
         this.setVisible(true);
-
     }
 
     public void addGeneralInfo(String content){

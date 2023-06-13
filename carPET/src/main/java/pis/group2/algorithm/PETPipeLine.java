@@ -8,6 +8,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import pis.group2.GUI.SinkGUI;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,6 +27,7 @@ public abstract class PETPipeLine {
     protected Properties kafkaPropertyImg = new Properties();
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
+    protected SinkGUI GUI;
 
     /**
      * create the Pipeline and initialisation, read the configurations
@@ -35,7 +37,10 @@ public abstract class PETPipeLine {
     public PETPipeLine(String confPath) throws Exception {
         this.confPath = confPath;
         this.env = StreamExecutionEnvironment.getExecutionEnvironment();
+        this.GUI = new SinkGUI();
         loadConfig();
+        this.buildPipeline();
+        this.execute();
     }
 
     public void loadConfig() throws IOException, ParseException {
