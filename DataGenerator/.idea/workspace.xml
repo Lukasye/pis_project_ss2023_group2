@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="be341437-402d-423d-851f-641c841bfdb5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/img2Kafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/img2Kafka.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/script" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/scripts/script" afterDir="false" />
-    </list>
+    <list default="true" id="be341437-402d-423d-851f-641c841bfdb5" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -129,7 +123,7 @@
       <workItem from="1686385955410" duration="2348000" />
       <workItem from="1686501358531" duration="604000" />
       <workItem from="1686586093737" duration="1551000" />
-      <workItem from="1686638849060" duration="3569000" />
+      <workItem from="1686638849060" duration="4268000" />
     </task>
     <servers />
   </component>
