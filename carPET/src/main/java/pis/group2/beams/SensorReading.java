@@ -39,6 +39,29 @@ public class SensorReading {
         this.vel = vel;
     }
 
+    public SensorReading(Double timestamp,
+                         Double latitude,
+                         Double longitude,
+                         Double altitude,
+                         Double acc_x,
+                         Double acc_y,
+                         Double vel,
+                         byte[] Image) {
+        PETPolicy = new HashMap<>();
+        PETPolicy.put("SPEED", 0);
+        PETPolicy.put("IMAGE", 0);
+        PETPolicy.put("LOCATION", 0);
+        this.timestamp = timestamp;
+//        this.latitude = latitude;
+//        this.longitude = longitude;
+        this.location = new ArrayList<>(Arrays.asList(new Tuple2<>(latitude, longitude)));
+        this.altitude = altitude;
+        this.acc_x = acc_x;
+        this.acc_y = acc_y;
+        this.vel = vel;
+        this.img = Image;
+    }
+
     public HashMap<String, Integer> getPETPolicy() {
         return PETPolicy;
     }
@@ -53,6 +76,7 @@ public class SensorReading {
         }
         return location.get(0);
     }
+
 
     public void setLocation(ArrayList<Tuple2<Double, Double>> location) {
         this.location = location;
