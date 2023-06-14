@@ -4,10 +4,15 @@ import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
+import org.apache.flink.streaming.api.functions.co.CoMapFunction;
+import org.apache.flink.streaming.api.functions.co.KeyedCoProcessFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.util.Collector;
 import pis.group2.GUI.SinkGUI;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.SensorReading;
@@ -254,6 +259,49 @@ public class PETUtils implements Serializable {
             this.GUI.addSpeedInfo(String.valueOf(value.getVel()));
 //            this.GUI.foolRefresh();
         }
+    }
+
+    public static class ImageDataMerge extends KeyedCoProcessFunction<String, byte[], String, SensorReading> {
+        private ValueState<byte[]> latestImage;
+        private ValueState<String> latestData;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            latestImage = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestImage", byte[].class));
+            latestData = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestData", String.class));
+        }
+
+        @Override
+        public void processElement1(byte[] bytes, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
+            latestImage.update(bytes);
+            String value = latestData.value();
+            if (value != null){
+                collector.collect(createSensorReadingFromRawInput(value, bytes));
+            }
+        }
+
+        @Override
+        public void processElement2(String s, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
+            latestData.update(s);
+            byte[] img = latestImage.value();
+            if (img != null){
+                collector.collect(createSensorReadingFromRawInput(s, img));
+            }
+
+        }
+    }
+
+    public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image){
+        String[] fields = input.split(",");
+        return new SensorReading(new Double(fields[0]),
+                new Double(fields[1]),
+                new Double(fields[2]),
+                new Double(fields[3]),
+                new Double(fields[12]),
+                new Double(fields[13]),
+                new Double(fields[9]),
+                Image);
     }
 
 }
