@@ -77,6 +77,17 @@ public class SensorReading {
         return location.get(0);
     }
 
+    public String getPositionAsString(){
+        if (location == null){
+            return null;
+        }
+        String tmp = "";
+        for (Tuple2<Double, Double> element : this.location) {
+            tmp = tmp + element + '\n';
+        }
+        return tmp;
+    }
+
 
     public void setLocation(ArrayList<Tuple2<Double, Double>> location) {
         this.location = location;
@@ -153,6 +164,7 @@ public class SensorReading {
                 ", location=" + location +
                 ", timestamp=" + timestamp +
                 ", vel=" + vel +
+                ", Image=" + (this.img != null) +
                 '}';
     }
 

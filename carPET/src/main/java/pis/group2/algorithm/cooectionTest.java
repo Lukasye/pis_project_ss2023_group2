@@ -1,20 +1,19 @@
 package pis.group2.algorithm;
 
-import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.datastream.ConnectedStreams;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
-
-import java.text.SimpleDateFormat;
+import scala.Tuple2;
 
 public class cooectionTest {
     public static void main(String[] args) throws Exception {
-        new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
+        new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2-main\\carPET\\config\\Pipeconfig.json") {
             @Override
             void buildPipeline() {
+                env.setParallelism(1);
                 // Read Image from kafka topic
                 FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
                         "test-image", new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
@@ -26,23 +25,23 @@ public class cooectionTest {
                 DataStreamSource<String> dataSource = env.addSource(sensorDataConsumer);
                 DataStreamSource<String> userSource = env.addSource(userDataConsumer);
 
+                // Merge two Stream
+                ConnectedStreams<byte[], String> connectedDataStream = imageSource.connect(dataSource);
+                SingleOutputStreamOperator<SensorReading> SensorReadingStream = connectedDataStream.flatMap(new PETUtils.assembleSensorReading());
 
-                ConnectedStreams<byte[], String> connectStream = imageSource.connect(dataSource);
-                ConnectedStreams<byte[], String> stringConnectedStreams = connectStream.keyBy(new KeySelector<byte[], Object>() {
-                    @Override
-                    public Object getKey(byte[] bytes) throws Exception {
-                        return new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-                    }
-                }, new KeySelector<String, Object>() {
-                    @Override
-                    public Object getKey(String s) throws Exception {
-                        return s;
-                    }
-                });
+                // Duplicate filter
+                SingleOutputStreamOperator<SensorReading> filteredStream = SensorReadingStream.filter(new PETUtils.duplicateCheck());
 
-                SingleOutputStreamOperator<SensorReading> mergedStream = stringConnectedStreams.process(new PETUtils.ImageDataMerge());
+                // Evaluation
+                SingleOutputStreamOperator<SensorReading> evaluatedStream = filteredStream.connect(userSource).flatMap(new PETUtils.evaluateSensorReading());
 
-                mergedStream.print();
+                //Apply PET
+                SingleOutputStreamOperator<SensorReading> resultStream = evaluatedStream.map(new PETUtils.applyPET<Double>(PETconfpath, "SPEED"))
+                        .map(new PETUtils.applyPET<Tuple2<Double, Double>>(PETconfpath, "LOCATION"))
+                        .map(new PETUtils.applyPET<byte[]>(PETconfpath, "IMAGE"));
+
+                // Sink
+                resultStream.addSink(new PETUtils.showInGUI(GUI));
 
             }
         };
