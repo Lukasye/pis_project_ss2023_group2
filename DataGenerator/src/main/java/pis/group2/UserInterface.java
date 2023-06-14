@@ -57,7 +57,7 @@ public class UserInterface {
 
     public void logic(String userInput) throws IOException, InterruptedException {
         int counter;
-        long timeout;
+        double timeout;
         String command;
         String[] elements = userInput.split(" ");
         switch (elements[0]){
@@ -67,14 +67,14 @@ public class UserInterface {
                     break;
                 }
                 counter = Integer.parseInt(elements[1]);
-                sendData(counter, 0L);
+                sendData(counter, 0.0);
                 break;
             case "delayrun":
                 if (elements.length != 3){
                     System.out.println("Invalid 'delayrun' argument!");
                 }
                 counter =Integer.parseInt(elements[1]);
-                timeout = Long.parseLong(elements[2]);
+                timeout = Double.parseDouble(elements[2]);
                 sendData(counter, timeout);
                 break;
             case "write":
@@ -101,11 +101,11 @@ public class UserInterface {
         }
     }
 
-    public void sendData(Integer counter, Long timeout) throws IOException, InterruptedException {
+    public void sendData(Integer counter, Double timeout) throws IOException, InterruptedException {
         for (int i = 0; i < counter; i++){
             data2Kafka.sendData();
             img2Kafka.sendData();
-            TimeUnit.SECONDS.sleep(timeout);
+            TimeUnit.MILLISECONDS.sleep((long) (timeout * 1000));
         }
         System.out.println(" " + counter + "GPS and IMG data published!");
     }
