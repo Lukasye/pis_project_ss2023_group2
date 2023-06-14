@@ -46,6 +46,7 @@ For the generating of the data introduced by KITTI dataset. We constructed a Dat
 | 2 | delayrun    |--number X --delay Y | Publish X message(including GPS and Camera data) to the topic, with a delay between each message Y seconds|
 | 3 | write    |--msg X| Write message to user topic to specify new user configuration|
 | 4 | reset    ||Reset the pointer for data to 0|
+| 5 | script  |-name X|Read the script in script folder with name X and execute the commands in ti|
 | 5 | exit    ||Exit the Generator programm|
 
 ## Evaluation

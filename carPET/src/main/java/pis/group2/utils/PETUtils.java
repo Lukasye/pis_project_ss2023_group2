@@ -54,14 +54,25 @@ public class PETUtils implements Serializable {
     public static class evaluationData implements MapFunction<SensorReading, SensorReading>{
 
         private int count = 0;
+        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
+        private final Double thredhold = 0.00135;
+
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
             count ++;
-            sensorReading.setPETPolicy("LOCATION", 1);
-            sensorReading.setPETPolicy("IMAGE", 1);
-            if (count > 20){
+            // Location strategy, determine whether the car is near at home
+            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+            int locationPET = (distance < thredhold)? 1 : 0;
+            sensorReading.setPETPolicy("LOCATION", locationPET);
+
+            // Dummy speed evaluation
+            if (count > 50){
                 sensorReading.setPETPolicy("SPEED", 1);
             }
+
+            // TODO: Image PET
+            sensorReading.setPETPolicy("IMAGE", 1);
+
             return sensorReading;
         }
     }
