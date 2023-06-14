@@ -11,6 +11,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.streaming.api.functions.co.CoMapFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedCoProcessFunction;
+import org.apache.flink.streaming.api.functions.co.RichCoMapFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.Collector;
 import pis.group2.GUI.SinkGUI;
@@ -79,6 +80,67 @@ public class PETUtils implements Serializable {
             sensorReading.setPETPolicy("IMAGE", 1);
 
             return sensorReading;
+        }
+    }
+
+    public static class evaluation extends RichCoMapFunction<SensorReading, String, SensorReading> {
+        private ValueState<Integer> UserSpeedPolicy;
+        private ValueState<Integer> UserLocationPolicy;
+        private ValueState<Integer> UserCameraPolicy;
+        private ValueState<Boolean> SpeedSituation;
+        private ValueState<Boolean> CameraSituation;
+        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
+        private final Double threshold = 0.00135;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            UserSpeedPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserSpeedPolicy", Integer.class));
+            UserLocationPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserLocationPolicy", Integer.class));
+            UserCameraPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserCameraPolicy", Integer.class));
+            SpeedSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("SpeedSituation", Boolean.class));
+            CameraSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("CameraSituation", Boolean.class));
+            // Initialise default value
+            UserCameraPolicy.update(0);
+            UserLocationPolicy.update(0);
+            UserSpeedPolicy.update(0);
+            SpeedSituation.update(false);
+            CameraSituation.update(false);
+        }
+
+        @Override
+        public SensorReading map1(SensorReading sensorReading) throws Exception {
+            // Location strategy, determine whether the car is near at home
+            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+            if (distance < threshold) sensorReading.setPETPolicy("LOCATION", UserLocationPolicy.value());
+            if (CameraSituation.value()) sensorReading.setPETPolicy("IMAGE", UserCameraPolicy.value());
+            if (SpeedSituation.value()) sensorReading.setPETPolicy("SPEED", UserSpeedPolicy.value());
+            return sensorReading;
+        }
+
+        @Override
+        public SensorReading map2(String s) throws Exception {
+            if (s.startsWith("change")){
+                // change the user-specified PET policy
+                String[] fields = s.split(",");
+                UserLocationPolicy.update(Integer.valueOf(fields[1]));
+                UserCameraPolicy.update(Integer.valueOf(fields[2]));
+                UserSpeedPolicy.update(Integer.valueOf(fields[3]));
+            } else if (s.startsWith("situation")) {
+                String[] fields = s.split(",");
+                switch (fields[1]){
+                    case "speed":
+                        SpeedSituation.update(!SpeedSituation.value());
+                        break;
+                    case "camera":
+                        CameraSituation.update(!CameraSituation.value());
+                    default:
+                        System.out.println("Not Valid 'situation' input!");
+                }
+            }else {
+                System.out.println("Not valid 'user config input!");
+            }
+            return null;
         }
     }
 
@@ -154,6 +216,9 @@ public class PETUtils implements Serializable {
         }
     }
 
+    /**
+     * Save the gps data information from SensorReading object with the name of the timestamp
+     */
     public static class saveDataAsText implements SinkFunction<SensorReading>{
         private final String OutputPath;
 

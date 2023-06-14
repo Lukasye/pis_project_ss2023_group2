@@ -20,8 +20,12 @@ public class cooectionTest {
                         "test-image", new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
                 FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic("test-data",
                         BOOTSTRAPSERVER, GROUPID);
+                FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic("test-user-input",
+                        BOOTSTRAPSERVER, GROUPID);
                 DataStreamSource<byte[]> imageSource = env.addSource(kafkaSource);
                 DataStreamSource<String> dataSource = env.addSource(sensorDataConsumer);
+                DataStreamSource<String> userSource = env.addSource(userDataConsumer);
+
 
                 ConnectedStreams<byte[], String> connectStream = imageSource.connect(dataSource);
                 ConnectedStreams<byte[], String> stringConnectedStreams = connectStream.keyBy(new KeySelector<byte[], Object>() {

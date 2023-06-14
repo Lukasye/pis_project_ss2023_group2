@@ -98,6 +98,7 @@ public class SinkGUI extends JFrame implements ActionListener {
         sinkGUI.addGeneralInfo("asdfasdfasd");
         sinkGUI.addSpeedInfo("12312");
         sinkGUI.addLocationInfo("112312123");
+        sinkGUI.setVisible(true);
     }
 
 }
