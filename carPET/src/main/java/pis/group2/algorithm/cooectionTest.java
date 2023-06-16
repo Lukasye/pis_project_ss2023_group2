@@ -10,7 +10,7 @@ import scala.Tuple2;
 
 public class cooectionTest {
     public static void main(String[] args) throws Exception {
-        new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2-main\\carPET\\config\\Pipeconfig.json") {
+        new PETPipeLine("/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/Pipeconfig.json") {
             @Override
             void buildPipeline() {
                 env.setParallelism(1);
