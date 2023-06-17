@@ -121,7 +121,14 @@ def main():
         gps_df.to_csv('gps_info.csv')
     # plot_gps_data(gps_df)
     # generate_gif_pic(gps_df)
-    generate_gif()
+    # generate_gif()
+    path = './nifi_data/'
+    length = len(gps_df)
+    for i in range(length):
+        asd = gps_df.iloc[i, :].to_numpy()
+        qwe = gps_df.iloc[i, :]
+        # asd.tofile(path + str(i) + '.csv', sep=',') 
+        qwe.to_json(path + str(i) + '.json')
     
 
 
