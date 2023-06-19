@@ -8,22 +8,23 @@ import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 import scala.Tuple2;
 
-public class cooectionTest {
+public class Variation1 {
     public static void main(String[] args) throws Exception {
         new PETPipeLine("/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/Pipeconfig.json") {
             @Override
             void buildPipeline() {
                 env.setParallelism(1);
                 // Read Image from kafka topic
-                FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
-                        "test-image", new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
-                FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic("test-data",
-                        BOOTSTRAPSERVER, GROUPID);
-                FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic("test-user-input",
-                        BOOTSTRAPSERVER, GROUPID);
-                DataStreamSource<byte[]> imageSource = env.addSource(kafkaSource);
-                DataStreamSource<String> dataSource = env.addSource(sensorDataConsumer);
-                DataStreamSource<String> userSource = env.addSource(userDataConsumer);
+//                FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
+//                        IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
+//                FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
+//                        BOOTSTRAPSERVER, GROUPID);
+//                FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
+//                        BOOTSTRAPSERVER, GROUPID);
+//                DataStreamSource<byte[]> imageSource = env.addSource(kafkaSource);
+//                DataStreamSource<String> dataSource = env.addSource(sensorDataConsumer);
+//                DataStreamSource<String> userSource = env.addSource(userDataConsumer);
+                initKafka();
 
                 // Merge two Stream
                 ConnectedStreams<byte[], String> connectedDataStream = imageSource.connect(dataSource);

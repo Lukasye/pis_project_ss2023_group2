@@ -1,6 +1,7 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
@@ -9,6 +10,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import pis.group2.GUI.SinkGUI;
+import pis.group2.utils.PETUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,11 +25,17 @@ public abstract class PETPipeLine {
     protected String BOOTSTRAPSERVER;
     protected String GROUPID;
     protected String FILEEXTENSION;
+    protected String IMAGETOPIC;
+    protected String GPSTOPIC;
+    protected String USERTOPIC;
     protected Properties kafkaProperty = new Properties();
     protected Properties kafkaPropertyImg = new Properties();
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
     protected SinkGUI GUI;
+    protected DataStreamSource<byte[]> imageSource;
+    protected DataStreamSource<String> dataSource;
+    protected DataStreamSource<String> userSource;
 
     /**
      * create the Pipeline and initialisation, read the configurations
@@ -59,6 +67,9 @@ public abstract class PETPipeLine {
         kafkaPropertyImg.setProperty("group.id", GROUPID);
         kafkaPropertyImg.setProperty("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         FILEEXTENSION = (String) jsonObject.get("FILE-EXTENSION");
+        IMAGETOPIC = (String) jsonObject.get("KAFKA-IMAGETOPIC");
+        GPSTOPIC = (String) jsonObject.get("KAFKA-GPSTOPIC");
+        USERTOPIC = (String) jsonObject.get("KAFKA-USERTOPIC");
     }
 
     /**
@@ -73,6 +84,18 @@ public abstract class PETPipeLine {
      */
     public void execute() throws Exception {
         env.execute();
+    }
+
+    public void initKafka(){
+        FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
+                IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
+        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
+                BOOTSTRAPSERVER, GROUPID);
+        FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
+                BOOTSTRAPSERVER, GROUPID);
+        imageSource = env.addSource(kafkaSource);
+        dataSource = env.addSource(sensorDataConsumer);
+        userSource = env.addSource(userDataConsumer);
     }
 
 

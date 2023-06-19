@@ -1,11 +1,14 @@
 {
   "PET-CONF": "config/PETconfig.json",
-  "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
   "TESTDATA-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data",
   "IMAGE-OUTPUT-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/",
   "USER-CONF": "config/Userconfig.json",
+  "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
 
   "BOOTSTRAP-SERVER": "localhost:9092",
   "GROUP-ID": "test-consumer-group",
-  "FILE-EXTENSION": "jpg"
+  "FILE-EXTENSION": "jpg",
+  "KAFKA-IMAGETOPIC": "test-image",
+  "KAFKA-GPSTOPIC": "test-data",
+  "KAFKA-USERTOPIC": "test-user-input"
 }
