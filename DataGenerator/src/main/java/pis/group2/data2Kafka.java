@@ -16,13 +16,16 @@ public class data2Kafka extends sth2Kafka<String> {
     private static final String TOPIC_NAME = "test-data";
     private List<String[]> csvData;
     private Integer pointer = 0;
+    private String DataType;
     private Integer size;
     private Integer currentBatchSize = 0;
 
-    public data2Kafka(String BOOTSTRAP_SERVERS, String dataPath) throws IOException {
+    public data2Kafka(String BOOTSTRAP_SERVERS, String dataPath, String datatype) throws IOException {
+//        assert datatype == "CSV" || datatype == "JSON";
         super(TOPIC_NAME, BOOTSTRAP_SERVERS, dataPath);
         properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producer = new KafkaProducer<>(properties);
+        DataType = datatype;
     }
 
     @Override

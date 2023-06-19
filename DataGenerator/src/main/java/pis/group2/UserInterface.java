@@ -13,6 +13,7 @@ public class UserInterface {
     private final String ConfPath;
     private String BOOTSTRAPSERVER;
     private String GPSData;
+    private String DataType;
     private String ImgData;
     private final data2Kafka data2Kafka;
     private final usr2Kafka usr2Kafka;
@@ -20,7 +21,7 @@ public class UserInterface {
     public UserInterface(String ConfPath) throws IOException {
         this.ConfPath = ConfPath;
         loadConfig();
-        data2Kafka = new data2Kafka(BOOTSTRAPSERVER, GPSData);
+        data2Kafka = new data2Kafka(BOOTSTRAPSERVER, GPSData, DataType);
         img2Kafka = new img2Kafka(BOOTSTRAPSERVER, ImgData);
         usr2Kafka = new usr2Kafka(BOOTSTRAPSERVER);
     }
@@ -33,6 +34,7 @@ public class UserInterface {
             GPSData = (String) jsonObject.get("GPS-DATA");
             ImgData = (String) jsonObject.get("IMG-DATA");
             BOOTSTRAPSERVER = (String) jsonObject.get("BOOTSTRAPSERVER");
+            DataType = (String) jsonObject.get("DATA-TYPE");
         } catch (Exception e) {
             e.printStackTrace();
         }
