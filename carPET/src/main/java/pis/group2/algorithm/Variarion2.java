@@ -25,7 +25,6 @@ public class Variarion2 {
                 // As the userSource only provide configurations, it goes directly into the sink
                 userSource.addSink(new PETUtils.changeUserPolicyInRedis(RedisConfig));
 
-
             }
         };
     }
