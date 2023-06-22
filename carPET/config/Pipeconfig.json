@@ -5,10 +5,13 @@
   "USER-CONF": "config/Userconfig.json",
   "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
 
-  "BOOTSTRAP-SERVER": "localhost:9092",
+  "BOOTSTRAP-SERVER": "192.168.1.13:9092",
   "GROUP-ID": "test-consumer-group",
   "FILE-EXTENSION": "jpg",
   "KAFKA-IMAGETOPIC": "test-image",
   "KAFKA-GPSTOPIC": "test-data",
-  "KAFKA-USERTOPIC": "test-user-input"
+  "KAFKA-USERTOPIC": "test-user-input",
+
+  "REDIS-SERVER" : "192.168.1.13",
+  "REDIS-PASS": "123456"
 }

@@ -1,15 +1,18 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import pis.group2.GUI.SinkGUI;
+import pis.group2.Jedis.DataFetcher;
 import pis.group2.utils.PETUtils;
 
 import java.io.FileReader;
@@ -36,6 +39,7 @@ public abstract class PETPipeLine {
     protected DataStreamSource<byte[]> imageSource;
     protected DataStreamSource<String> dataSource;
     protected DataStreamSource<String> userSource;
+    protected Tuple2<String, String> RedisConfig;
 
     /**
      * create the Pipeline and initialisation, read the configurations
@@ -70,6 +74,9 @@ public abstract class PETPipeLine {
         IMAGETOPIC = (String) jsonObject.get("KAFKA-IMAGETOPIC");
         GPSTOPIC = (String) jsonObject.get("KAFKA-GPSTOPIC");
         USERTOPIC = (String) jsonObject.get("KAFKA-USERTOPIC");
+        String redisSer = (String) jsonObject.get("REDIS-SERVER");
+        String redisPass = (String) jsonObject.get("REDIS-PASS");
+        RedisConfig = new Tuple2<>(redisSer, redisPass);
     }
 
     /**

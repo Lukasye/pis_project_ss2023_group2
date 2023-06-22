@@ -11,20 +11,48 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.CoFlatMapFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedCoProcessFunction;
 import org.apache.flink.streaming.api.functions.co.RichCoMapFunction;
+import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.util.Collector;
 import pis.group2.GUI.SinkGUI;
+import pis.group2.Jedis.DataFetcher;
 import pis.group2.PETLoader.PETLoader;
+import pis.group2.beams.ImageWrapper;
+import pis.group2.beams.JedisWrapper;
 import pis.group2.beams.SensorReading;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisFactory;
+import redis.clients.jedis.JedisPool;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class PETUtils implements Serializable {
 
+
+    /**
+     * Determine the way flink accept kafka data as image byte array.
+     */
+    // Kafka deserializer function
+    public static class ReadByteAsStream extends AbstractDeserializationSchema<byte[]>{
+
+        @Override
+        public byte[] deserialize(byte[] bytes) throws IOException {
+            return bytes;
+        }
+    }
+
+    // Transformation Functions
+
+    /**
+     * Map a gps raw stream direct into a SensorReading POJO without Image.
+     */
     public static class toSensorReading implements MapFunction<String, SensorReading>{
 
         @Override
@@ -40,6 +68,17 @@ public class PETUtils implements Serializable {
         }
     }
 
+    /**
+     * Map a byte array into a ImageWrapper POJO without gps. used in Variation two.
+     */
+    public static class toImageWrapper implements MapFunction<byte[], ImageWrapper>{
+
+        @Override
+        public ImageWrapper map(byte[] bytes) throws Exception {
+            return new ImageWrapper(bytes);
+        }
+    }
+
     public static class addImageToReading implements MapFunction<byte[], SensorReading>{
 
         @Override
@@ -47,6 +86,66 @@ public class PETUtils implements Serializable {
             SensorReading tmp = new SensorReading();
             tmp.setImg(bytes);
             return tmp;
+        }
+    }
+
+    /**
+     * Methode to merge two Stream together in Variation 1, use the timestamp to extract the newest gps information
+     * and the image, assemble them to create a SensorReading POJO.
+     */
+    public static class assembleSensorReading implements CoFlatMapFunction<byte[], String, SensorReading> {
+        private String Data;
+        private byte[] Image;
+
+        @Override
+        public void flatMap1(byte[] bytes, Collector<SensorReading> collector) throws Exception {
+            this.Image = bytes;
+            if (this.Data != null) {
+                collector.collect(createSensorReadingFromRawInput(this.Data, bytes));
+            }
+        }
+
+        @Override
+        public void flatMap2(String s, Collector<SensorReading> collector) throws Exception {
+            this.Data = s;
+            if (this.Image != null) {
+                collector.collect(createSensorReadingFromRawInput(s, this.Image));
+            }
+
+        }
+    }
+
+    /**
+     * Outdated version for the previous function.
+     */
+    public static class ImageDataMerge extends KeyedCoProcessFunction<String, byte[], String, SensorReading> {
+        private ValueState<byte[]> latestImage;
+        private ValueState<String> latestData;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            latestImage = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestImage", byte[].class));
+            latestData = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestData", String.class));
+        }
+
+        @Override
+        public void processElement1(byte[] bytes, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
+            latestImage.update(bytes);
+            String value = latestData.value();
+            if (value != null){
+                collector.collect(createSensorReadingFromRawInput(value, bytes));
+            }
+        }
+
+        @Override
+        public void processElement2(String s, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
+            latestData.update(s);
+            byte[] img = latestImage.value();
+            if (img != null){
+                collector.collect(createSensorReadingFromRawInput(s, img));
+            }
+
         }
     }
 
@@ -76,55 +175,12 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class evaluateSensorReading implements CoFlatMapFunction<SensorReading, String, SensorReading>{
-        private Integer UserSpeedPolicy = 0;
-        private Integer UserLocationPolicy = 0;
-        private Integer UserCameraPolicy = 0;
-        private Boolean SpeedSituation = false;
-        private Boolean CameraSituation = false;
-        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
-        private final Double threshold = 0.00135;
 
-        @Override
-        public void flatMap1(SensorReading sensorReading, Collector<SensorReading> collector) throws Exception {
-            // Location strategy, determine whether the car is near at home
-            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
-            if (distance < threshold) sensorReading.setPETPolicy("LOCATION", UserLocationPolicy);
-            if (CameraSituation) sensorReading.setPETPolicy("IMAGE", UserCameraPolicy);
-            if (SpeedSituation) sensorReading.setPETPolicy("SPEED", UserSpeedPolicy);
-            collector.collect(sensorReading);
-        }
-
-        @Override
-        public void flatMap2(String s, Collector<SensorReading> collector) throws Exception {
-            System.out.println("Current policy: \nLocation: " + UserLocationPolicy + " Camera: " + UserCameraPolicy + " Speed: " + UserSpeedPolicy);
-            if (s.startsWith("change")){
-                // change the user-specified PET policy
-                String[] fields = s.split(",");
-                UserLocationPolicy = Integer.valueOf(fields[1]);
-                UserCameraPolicy = Integer.valueOf(fields[2]);
-                UserSpeedPolicy = Integer.valueOf(fields[3]);
-                System.out.println("Change policy setting!");
-            } else if (s.startsWith("situation")) {
-                String[] fields = s.split(",");
-                switch (fields[1]){
-                    case "speed":
-                        SpeedSituation = !SpeedSituation;
-                        System.out.println("Switch Speed environment!" + SpeedSituation);
-                        break;
-                    case "camera":
-                        CameraSituation = !CameraSituation;
-                        System.out.println("Switch camera environment!" + CameraSituation);
-                        break;
-                    default:
-                        System.out.println("Not Valid 'situation' input!");
-                }
-            }else {
-                System.out.println("Not valid 'user config input!");
-            }
-        }
-    }
-
+    /**
+     * Duplicate filter for Outcome from connected stream in variation 1, for the concurrence problem cause by
+     * connect stream. The message might be duplicated. Use the Timestamp to determine whether this is the actual
+     * information.
+     */
     public static class duplicateCheck implements FilterFunction<SensorReading>{
         private Double currentTimeStamp = 0.0;
 
@@ -137,70 +193,6 @@ public class PETUtils implements Serializable {
             } else {
                 return false;
             }
-        }
-    }
-
-    public static class evaluation extends RichCoMapFunction<SensorReading, String, SensorReading> {
-        private ValueState<Integer> UserSpeedPolicy;
-        private ValueState<Integer> UserLocationPolicy;
-        private ValueState<Integer> UserCameraPolicy;
-        private ValueState<Boolean> SpeedSituation;
-        private ValueState<Boolean> CameraSituation;
-        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
-        private final Double threshold = 0.00135;
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            UserSpeedPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserSpeedPolicy", Integer.class));
-            UserLocationPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserLocationPolicy", Integer.class));
-            UserCameraPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserCameraPolicy", Integer.class));
-            SpeedSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("SpeedSituation", Boolean.class));
-            CameraSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("CameraSituation", Boolean.class));
-            // Initialise default value
-            UserCameraPolicy.update(0);
-            UserLocationPolicy.update(0);
-            UserSpeedPolicy.update(0);
-            SpeedSituation.update(false);
-            CameraSituation.update(false);
-        }
-
-        @Override
-        public SensorReading map1(SensorReading sensorReading) throws Exception {
-            // Location strategy, determine whether the car is near at home
-            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
-            if (distance < threshold) sensorReading.setPETPolicy("LOCATION", UserLocationPolicy.value());
-            if (CameraSituation.value()) sensorReading.setPETPolicy("IMAGE", UserCameraPolicy.value());
-            if (SpeedSituation.value()) sensorReading.setPETPolicy("SPEED", UserSpeedPolicy.value());
-            return sensorReading;
-        }
-
-        @Override
-        public SensorReading map2(String s) throws Exception {
-            if (s.startsWith("change")){
-                // change the user-specified PET policy
-                String[] fields = s.split(",");
-                UserLocationPolicy.update(Integer.valueOf(fields[1]));
-                UserCameraPolicy.update(Integer.valueOf(fields[2]));
-                UserSpeedPolicy.update(Integer.valueOf(fields[3]));
-                System.out.println("Change policy setting!");
-            } else if (s.startsWith("situation")) {
-                String[] fields = s.split(",");
-                switch (fields[1]){
-                    case "speed":
-                        SpeedSituation.update(!SpeedSituation.value());
-                        System.out.println("Switch Speed environment!");
-                        break;
-                    case "camera":
-                        CameraSituation.update(!CameraSituation.value());
-                        System.out.println("Switch camera environment!");
-                    default:
-                        System.out.println("Not Valid 'situation' input!");
-                }
-            }else {
-                System.out.println("Not valid 'user config input!");
-            }
-            return null;
         }
     }
 
@@ -277,20 +269,176 @@ public class PETUtils implements Serializable {
     }
 
     /**
-     * Save the gps data information from SensorReading object with the name of the timestamp
+     * Evaluation methode for Variation 1, Accept the SensorReading stream and the User Input stream, use coflatmap
+     * to determine whether the situation is changed or not.
      */
-    public static class saveDataAsText implements SinkFunction<SensorReading>{
-        private final String OutputPath;
+    public static class evaluateSensorReading implements CoFlatMapFunction<SensorReading, String, SensorReading>{
+        private Integer UserSpeedPolicy = 0;
+        private Integer UserLocationPolicy = 0;
+        private Integer UserCameraPolicy = 0;
+        private Boolean SpeedSituation = false;
+        private Boolean CameraSituation = false;
+        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
+        private final Double threshold = 0.00135;
 
-        public saveDataAsText(String path){
-            this.OutputPath = path;
+        @Override
+        public void flatMap1(SensorReading sensorReading, Collector<SensorReading> collector) throws Exception {
+            // Location strategy, determine whether the car is near at home
+            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+            if (distance < threshold) sensorReading.setPETPolicy("LOCATION", UserLocationPolicy);
+            if (CameraSituation) sensorReading.setPETPolicy("IMAGE", UserCameraPolicy);
+            if (SpeedSituation) sensorReading.setPETPolicy("SPEED", UserSpeedPolicy);
+            collector.collect(sensorReading);
+        }
+
+        @Override
+        public void flatMap2(String s, Collector<SensorReading> collector) throws Exception {
+            System.out.println("Current policy: \nLocation: " + UserLocationPolicy + " Camera: " + UserCameraPolicy + " Speed: " + UserSpeedPolicy);
+            if (s.startsWith("change")){
+                // change the user-specified PET policy
+                String[] fields = s.split(",");
+                UserLocationPolicy = Integer.valueOf(fields[1]);
+                UserCameraPolicy = Integer.valueOf(fields[2]);
+                UserSpeedPolicy = Integer.valueOf(fields[3]);
+                System.out.println("Change policy setting!");
+            } else if (s.startsWith("situation")) {
+                String[] fields = s.split(",");
+                switch (fields[1]){
+                    case "speed":
+                        SpeedSituation = !SpeedSituation;
+                        System.out.println("Switch Speed environment!" + SpeedSituation);
+                        break;
+                    case "camera":
+                        CameraSituation = !CameraSituation;
+                        System.out.println("Switch camera environment!" + CameraSituation);
+                        break;
+                    default:
+                        System.out.println("Not Valid 'situation' input!");
+                }
+            }else {
+                System.out.println("Not valid 'user config input!");
+            }
+        }
+    }
+
+    public static class evaluation extends RichCoMapFunction<SensorReading, String, SensorReading> {
+        private ValueState<Integer> UserSpeedPolicy;
+        private ValueState<Integer> UserLocationPolicy;
+        private ValueState<Integer> UserCameraPolicy;
+        private ValueState<Boolean> SpeedSituation;
+        private ValueState<Boolean> CameraSituation;
+        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
+        private final Double threshold = 0.00135;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            UserSpeedPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserSpeedPolicy", Integer.class));
+            UserLocationPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserLocationPolicy", Integer.class));
+            UserCameraPolicy = this.getRuntimeContext().getState(new ValueStateDescriptor<>("UserCameraPolicy", Integer.class));
+            SpeedSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("SpeedSituation", Boolean.class));
+            CameraSituation = this.getRuntimeContext().getState(new ValueStateDescriptor<>("CameraSituation", Boolean.class));
+            // Initialise default value
+            UserCameraPolicy.update(0);
+            UserLocationPolicy.update(0);
+            UserSpeedPolicy.update(0);
+            SpeedSituation.update(false);
+            CameraSituation.update(false);
+        }
+
+        @Override
+        public SensorReading map1(SensorReading sensorReading) throws Exception {
+            // Location strategy, determine whether the car is near at home
+            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+            if (distance < threshold) sensorReading.setPETPolicy("LOCATION", UserLocationPolicy.value());
+            if (CameraSituation.value()) sensorReading.setPETPolicy("IMAGE", UserCameraPolicy.value());
+            if (SpeedSituation.value()) sensorReading.setPETPolicy("SPEED", UserSpeedPolicy.value());
+            return sensorReading;
+        }
+
+        @Override
+        public SensorReading map2(String s) throws Exception {
+            if (s.startsWith("change")){
+                // change the user-specified PET policy
+                String[] fields = s.split(",");
+                UserLocationPolicy.update(Integer.valueOf(fields[1]));
+                UserCameraPolicy.update(Integer.valueOf(fields[2]));
+                UserSpeedPolicy.update(Integer.valueOf(fields[3]));
+                System.out.println("Change policy setting!");
+            } else if (s.startsWith("situation")) {
+                String[] fields = s.split(",");
+                switch (fields[1]){
+                    case "speed":
+                        SpeedSituation.update(!SpeedSituation.value());
+                        System.out.println("Switch Speed environment!");
+                        break;
+                    case "camera":
+                        CameraSituation.update(!CameraSituation.value());
+                        System.out.println("Switch camera environment!");
+                    default:
+                        System.out.println("Not Valid 'situation' input!");
+                }
+            }else {
+                System.out.println("Not valid 'user config input!");
+            }
+            return null;
+        }
+    }
+
+    public static class dataEvaluationRedis extends RichMapFunction<SensorReading, SensorReading>{
+        private final Tuple2<String, String> RedisConfig;
+        private transient JedisPool jedisPool;
+
+
+        public dataEvaluationRedis(Tuple2<String, String> dataFetcher) {
+            super();
+            this.RedisConfig = dataFetcher;
+        }
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+        }
+
+        @Override
+        public void close() throws Exception {
+            super.close();
+            this.jedisPool.destroy();
+        }
+
+        @Override
+        public SensorReading map(SensorReading sensorReading) throws Exception {
+            return null;
+        }
+    }
+    // Sink Functions
+    public static class sendDataToGUI implements SinkFunction<SensorReading>{
+        private final SinkGUI GUI;
+
+        public sendDataToGUI(SinkGUI GUI) {
+            this.GUI = GUI;
         }
 
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
-            try (PrintWriter out = new PrintWriter(OutputPath + value.getTimestamp())) {
-                out.println(value);
-            }
+            SinkFunction.super.invoke(value, context);
+            this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
+            this.GUI.addLocationInfo(String.valueOf(value.getPositionAsString()));
+            this.GUI.addSpeedInfo(String.valueOf(value.getVel()));
+//            this.GUI.foolRefresh();
+        }
+    }
+
+    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
+            System.out.println(bais);
+            BufferedImage image = ImageIO.read(bais);
+            String filePath = OutputPath + counter + "." + DataType;
+
+            ImageIO.write(image, DataType, new File(filePath));
+
+        } catch (IOException e) {
+            System.out.println("Error writing image file: " + e.getMessage());
         }
     }
 
@@ -328,14 +476,6 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class ReadByteAsStream extends AbstractDeserializationSchema<byte[]>{
-
-        @Override
-        public byte[] deserialize(byte[] bytes) throws IOException {
-            return bytes;
-        }
-    }
-
     public static class showInGUI implements SinkFunction<SensorReading>{
         private final SinkGUI GUI;
 
@@ -354,89 +494,135 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
-            System.out.println(bais);
-            BufferedImage image = ImageIO.read(bais);
-            String filePath = OutputPath + counter + "." + DataType;
+    /**
+     * Save the gps data information from SensorReading object with the name of the timestamp
+     */
+    public static class saveDataAsText implements SinkFunction<SensorReading>{
+        private final String OutputPath;
 
-            ImageIO.write(image, DataType, new File(filePath));
-
-        } catch (IOException e) {
-            System.out.println("Error writing image file: " + e.getMessage());
-        }
-    }
-
-    public static class sendDataToGUI implements SinkFunction<SensorReading>{
-        private final SinkGUI GUI;
-
-        public sendDataToGUI(SinkGUI GUI) {
-            this.GUI = GUI;
+        public saveDataAsText(String path){
+            this.OutputPath = path;
         }
 
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
-            SinkFunction.super.invoke(value, context);
-            this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
-            this.GUI.addLocationInfo(String.valueOf(value.getPositionAsString()));
-            this.GUI.addSpeedInfo(String.valueOf(value.getVel()));
-//            this.GUI.foolRefresh();
+            try (PrintWriter out = new PrintWriter(OutputPath + value.getTimestamp())) {
+                out.println(value);
+            }
         }
     }
 
-    public static class ImageDataMerge extends KeyedCoProcessFunction<String, byte[], String, SensorReading> {
-        private ValueState<byte[]> latestImage;
-        private ValueState<String> latestData;
+
+    /**
+     * Update the new Policy and situation changes to the redis server
+     */
+    public static class changeUserPolicyInRedis extends RichSinkFunction<String> {
+        private final Tuple2<String, String> RedisConfig;
+        private transient JedisPool jedisPool;
+        private Integer UserSpeedPolicy;
+        private Integer UserLocationPolicy;
+        private Integer UserCameraPolicy;
+        private Integer SpeedSituation;
+        private Integer CameraSituation;
+
+        public changeUserPolicyInRedis(Tuple2<String, String> dataFetcher) {
+            super();
+            this.RedisConfig = dataFetcher;
+        }
+
+        public void getPolicy(){
+            try (Jedis jedis = this.jedisPool.getResource()) {
+                UserSpeedPolicy = Integer.valueOf(jedis.get("UserSpeedPolicy"));
+                UserLocationPolicy = Integer.valueOf(jedis.get("UserLocationPolicy"));
+                UserCameraPolicy = Integer.valueOf(jedis.get("UserCameraPolicy"));
+                SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
+                CameraSituation = Integer.valueOf(jedis.get("CameraSituation"));
+            }
+        }
+
+        public void setPolicy(){
+            try (Jedis jedis = this.jedisPool.getResource()) {
+                jedis.set("UserSpeedPolicy", String.valueOf(UserSpeedPolicy));
+                jedis.set("UserLocationPolicy", String.valueOf(UserLocationPolicy));
+                jedis.set("UserCameraPolicy", String.valueOf(UserCameraPolicy));
+                jedis.set("SpeedSituation", String.valueOf(SpeedSituation));
+                jedis.set("CameraSituation", String.valueOf(CameraSituation));
+            }
+        }
 
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            latestImage = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestImage", byte[].class));
-            latestData = this.getRuntimeContext().getState(new ValueStateDescriptor<>("latestData", String.class));
+            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            this.getPolicy();
         }
 
         @Override
-        public void processElement1(byte[] bytes, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
-            latestImage.update(bytes);
-            String value = latestData.value();
-            if (value != null){
-                collector.collect(createSensorReadingFromRawInput(value, bytes));
-            }
+        public void close() throws Exception {
+            super.close();
+            this.jedisPool.destroy();
         }
 
         @Override
-        public void processElement2(String s, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
-            latestData.update(s);
-            byte[] img = latestImage.value();
-            if (img != null){
-                collector.collect(createSensorReadingFromRawInput(s, img));
+        public void invoke(String value, Context context) throws Exception {
+            super.invoke(value, context);
+            if (value.startsWith("change")){
+                // change the user-specified PET policy
+                String[] fields = value.split(",");
+                UserLocationPolicy = Integer.valueOf(fields[1]);
+                UserCameraPolicy = Integer.valueOf(fields[2]);
+                UserSpeedPolicy = Integer.valueOf(fields[3]);
+                this.setPolicy();
+                System.out.println("Change policy setting!");
+                System.out.println("Current policy: " + UserLocationPolicy + UserSpeedPolicy + UserCameraPolicy);
+            } else if (value.startsWith("situation")) {
+                String[] fields = value.split(",");
+                switch (fields[1]) {
+                    case "speed":
+                        SpeedSituation = SpeedSituation == 1? 0: 1;
+                        this.setPolicy();
+                        System.out.println("Switch Speed environment!" + SpeedSituation);
+                        break;
+                    case "camera":
+                        CameraSituation = CameraSituation == 1? 0: 1;
+                        this.setPolicy();
+                        System.out.println("Switch camera environment!" + CameraSituation);
+                        break;
+                    default:
+                        System.out.println("Not Valid 'situation' input!");
+                }
             }
-
+            else {
+                System.out.println("Not valid 'user config input!");
+            }
         }
     }
 
-    public static class assembleSensorReading implements CoFlatMapFunction<byte[], String, SensorReading> {
-        private String Data;
-        private byte[] Image;
+    public static class changeUserPolicyInRedisV2 implements RedisMapper<Tuple2<String, Integer>> {
 
         @Override
-        public void flatMap1(byte[] bytes, Collector<SensorReading> collector) throws Exception {
-            this.Image = bytes;
-            if (this.Data != null) {
-                collector.collect(createSensorReadingFromRawInput(this.Data, bytes));
-            }
+        public RedisCommandDescription getCommandDescription() {
+            return null;
         }
 
         @Override
-        public void flatMap2(String s, Collector<SensorReading> collector) throws Exception {
-            this.Data = s;
-            if (this.Image != null) {
-                collector.collect(createSensorReadingFromRawInput(s, this.Image));
-            }
+        public String getKeyFromData(Tuple2<String, Integer> stringIntegerTuple2) {
+            return stringIntegerTuple2.f0;
+        }
 
+        @Override
+        public String getValueFromData(Tuple2<String, Integer> stringIntegerTuple2) {
+            return String.valueOf(stringIntegerTuple2.f1);
         }
     }
+    // Helper Functions
 
+    /**
+     * Helper function to convert raw input data source into POJO
+     * @param input The input stream from the gps information in raw String csv format
+     * @param Image Byte array format of input image
+     * @return SensorReading POJO
+     */
     public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image){
         String[] fields = input.split(",");
         return new SensorReading(new Double(fields[0]),
