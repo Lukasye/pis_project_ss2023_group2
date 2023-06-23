@@ -1,17 +1,20 @@
 package pis.group2.beams;
 
-public class ImageWrapper {
+public class ImageWrapper extends dataWrapper{
     private byte[] Image;
     private Double Timestamp;
 
     public ImageWrapper() {
+        super();
     }
 
     public ImageWrapper(byte[] image) {
+        super();
         Image = image;
     }
 
     public ImageWrapper(byte[] image, Double timestamp) {
+        super();
         Image = image;
         Timestamp = timestamp;
     }

@@ -22,6 +22,7 @@ import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.ImageWrapper;
 import pis.group2.beams.JedisWrapper;
 import pis.group2.beams.SensorReading;
+import pis.group2.beams.dataWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisFactory;
 import redis.clients.jedis.JedisPool;
@@ -192,6 +193,56 @@ public class PETUtils implements Serializable {
                 return true;
             } else {
                 return false;
+            }
+        }
+    }
+
+    public static class retrieveDataPolicy extends RichMapFunction<SensorReading, SensorReading>{
+        private final Tuple2<String, String> RedisConfig;
+        private transient JedisPool jedisPool;
+        private Integer UserSpeedPolicy;
+        private Integer UserLocationPolicy;
+        private Integer UserCameraPolicy;
+        private Integer SpeedSituation;
+        private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
+        private final Double thredhold = 0.00135;
+
+        public retrieveDataPolicy(Tuple2<String, String> dataFetcher) {
+            super();
+            this.RedisConfig = dataFetcher;
+        }
+
+        public void getPolicy(){
+            try (Jedis jedis = this.jedisPool.getResource()) {
+                UserSpeedPolicy = Integer.valueOf(jedis.get("UserSpeedPolicy"));
+                UserLocationPolicy = Integer.valueOf(jedis.get("UserLocationPolicy"));
+                UserCameraPolicy = Integer.valueOf(jedis.get("UserCameraPolicy"));
+                SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
+
+            }
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            this.getPolicy();
+        }
+
+        @Override
+        public SensorReading map(SensorReading sensorReading) throws Exception {
+            try(Jedis jedis = this.jedisPool.getResource()) {
+                // check the dirty bit, if the data is already modified, update the policy
+                if (Integer.parseInt(jedis.get("dirty")) == 1){
+                    this.getPolicy();
+                    jedis.set("dirty", "0");
+                }
+                Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+                int locationPET = (distance < thredhold)? 1 : 0;
+                sensorReading.setPETPolicy("LOCATION", locationPET);
+                sensorReading.setPETPolicy("SPEED", SpeedSituation == 1? UserSpeedPolicy: 0);
+                sensorReading.setPETPolicy("IMAGE", 0);
+                return sensorReading;
             }
         }
     }
@@ -547,6 +598,7 @@ public class PETUtils implements Serializable {
                 jedis.set("UserCameraPolicy", String.valueOf(UserCameraPolicy));
                 jedis.set("SpeedSituation", String.valueOf(SpeedSituation));
                 jedis.set("CameraSituation", String.valueOf(CameraSituation));
+                jedis.set("dirty", "1");
             }
         }
 

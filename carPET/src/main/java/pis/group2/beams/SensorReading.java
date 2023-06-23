@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class SensorReading {
-    private HashMap<String, Integer> PETPolicy;
+public class SensorReading extends dataWrapper{
     private ArrayList<Tuple2<Double, Double>> location;
     private Double timestamp;
     private Double altitude;
@@ -18,17 +17,11 @@ public class SensorReading {
     private byte[] img;
 
     public SensorReading() {
-        PETPolicy = new HashMap<>();
-        PETPolicy.put("SPEED", 0);
-        PETPolicy.put("IMAGE", 0);
-        PETPolicy.put("LOCATION", 0);
+        super();
     }
 
     public SensorReading(Double timestamp, Double latitude, Double longitude, Double altitude, Double acc_x, Double acc_y, Double vel) {
-        PETPolicy = new HashMap<>();
-        PETPolicy.put("SPEED", 0);
-        PETPolicy.put("IMAGE", 0);
-        PETPolicy.put("LOCATION", 0);
+        super();
         this.timestamp = timestamp;
 //        this.latitude = latitude;
 //        this.longitude = longitude;
@@ -62,13 +55,6 @@ public class SensorReading {
         this.img = Image;
     }
 
-    public HashMap<String, Integer> getPETPolicy() {
-        return PETPolicy;
-    }
-
-    public void setPETPolicy(String key, Integer value) {
-        this.PETPolicy.put(key, value);
-    }
 
     public Tuple2<Double, Double> getPosition(){
         if (location == null){

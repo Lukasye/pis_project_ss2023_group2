@@ -24,6 +24,13 @@ public class Variarion2 {
                 // Determine Evaluation
                 // As the userSource only provide configurations, it goes directly into the sink
                 userSource.addSink(new PETUtils.changeUserPolicyInRedis(RedisConfig));
+                SingleOutputStreamOperator<SensorReading> evaluatedSensorReadingStream = SensorReadingStream.map(new PETUtils.retrieveDataPolicy(RedisConfig));
+
+                // Apply PET
+                SingleOutputStreamOperator<SensorReading> dataResultStream = evaluatedSensorReadingStream.map(new PETUtils.applyPET<>(PETconfpath, "LOCATION"));
+
+                // Sink
+                dataResultStream.print();
 
             }
         };

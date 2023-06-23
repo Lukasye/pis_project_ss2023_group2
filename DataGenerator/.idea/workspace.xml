@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="be341437-402d-423d-851f-641c841bfdb5" name="Changes" comment="modified delayrun">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/UserInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pis/group2/data2Kafka.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/Dataconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Dataconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -142,6 +139,8 @@
       <workItem from="1686902021116" duration="5157000" />
       <workItem from="1687072962239" duration="705000" />
       <workItem from="1687164030787" duration="6157000" />
+      <workItem from="1687252596232" duration="2383000" />
+      <workItem from="1687439140387" duration="3187000" />
     </task>
     <task id="LOCAL-00001" summary="modified delayrun">
       <created>1686777008786</created>
