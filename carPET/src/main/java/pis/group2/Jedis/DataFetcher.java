@@ -2,6 +2,7 @@ package pis.group2.Jedis;
 
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import pis.group2.beams.JedisWrapper;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -25,7 +26,7 @@ public class DataFetcher implements Serializable {
         jedisPool= new JedisPool(jedisPoolConfig, ip, 6379, 1000, pass);
     }
 
-    public static JedisPool jedisPoolFactory(Tuple2<String, String> config){
+    public static JedisPool jedisPoolFactory(Tuple3<String, String, String> config){
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(8);
         jedisPoolConfig.setMaxIdle(8);

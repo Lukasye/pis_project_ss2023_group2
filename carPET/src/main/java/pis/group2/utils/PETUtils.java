@@ -7,6 +7,7 @@ import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.CoFlatMapFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedCoProcessFunction;
@@ -18,6 +19,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.util.Collector;
 import pis.group2.GUI.SinkGUI;
 import pis.group2.Jedis.DataFetcher;
+import pis.group2.Jedis.JedisTest;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.ImageWrapper;
 import pis.group2.beams.JedisWrapper;
@@ -198,8 +200,9 @@ public class PETUtils implements Serializable {
     }
 
     public static class retrieveDataPolicy extends RichMapFunction<SensorReading, SensorReading>{
-        private final Tuple2<String, String> RedisConfig;
-        private transient JedisPool jedisPool;
+        private final Tuple3<String, String, String> RedisConfig;
+//        private transient JedisPool jedisPool;
+        private transient Jedis jedis;
         private Integer UserSpeedPolicy;
         private Integer UserLocationPolicy;
         private Integer UserCameraPolicy;
@@ -207,31 +210,37 @@ public class PETUtils implements Serializable {
         private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
         private final Double thredhold = 0.00135;
 
-        public retrieveDataPolicy(Tuple2<String, String> dataFetcher) {
+        public retrieveDataPolicy(Tuple3<String, String, String> dataFetcher) {
             super();
             this.RedisConfig = dataFetcher;
         }
 
         public void getPolicy(){
-            try (Jedis jedis = this.jedisPool.getResource()) {
-                UserSpeedPolicy = Integer.valueOf(jedis.get("UserSpeedPolicy"));
-                UserLocationPolicy = Integer.valueOf(jedis.get("UserLocationPolicy"));
-                UserCameraPolicy = Integer.valueOf(jedis.get("UserCameraPolicy"));
+//            try (Jedis jedis = this.jedisPool.getResource()) {
+                UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
+                UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
+                UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
                 SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
-
-            }
+//            }
         }
 
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+//            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            jedis = new Jedis(this.RedisConfig.f2);
             this.getPolicy();
         }
 
         @Override
+        public void close() throws Exception {
+            super.close();
+            this.jedis.close();
+        }
+
+        @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
-            try(Jedis jedis = this.jedisPool.getResource()) {
+//            try(Jedis jedis = this.jedisPool.getResource()) {
                 // check the dirty bit, if the data is already modified, update the policy
                 if (Integer.parseInt(jedis.get("dirty")) == 1){
                     this.getPolicy();
@@ -243,9 +252,121 @@ public class PETUtils implements Serializable {
                 sensorReading.setPETPolicy("SPEED", SpeedSituation == 1? UserSpeedPolicy: 0);
                 sensorReading.setPETPolicy("IMAGE", 0);
                 return sensorReading;
-            }
+//            }
         }
     }
+
+    public static class retrieveImagePolicy extends RichMapFunction<ImageWrapper, ImageWrapper>{
+        private final Tuple3<String, String, String> RedisConfig;
+        //        private transient JedisPool jedisPool;
+        private transient Jedis jedis;
+        private Integer UserSpeedPolicy;
+        private Integer UserLocationPolicy;
+        private Integer UserCameraPolicy;
+        private Integer SpeedSituation;
+        private Integer CameraSituation;
+
+        public retrieveImagePolicy(Tuple3<String, String, String> dataFetcher) {
+            super();
+            this.RedisConfig = dataFetcher;
+        }
+
+        public void getPolicy(){
+//            try (Jedis jedis = this.jedisPool.getResource()) {
+            UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
+            UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
+            UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
+            SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
+            CameraSituation = Integer.valueOf(jedis.get("CameraSituation"));
+//            }
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+//            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            jedis = new Jedis(this.RedisConfig.f2);
+            this.getPolicy();
+        }
+
+        @Override
+        public void close() throws Exception {
+            super.close();
+            this.jedis.close();
+        }
+
+        @Override
+        public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
+//            try(Jedis jedis = this.jedisPool.getResource()) {
+            // check the dirty bit, if the data is already modified, update the policy
+            if (Integer.parseInt(jedis.get("dirty")) == 1){
+                this.getPolicy();
+                jedis.set("dirty", "0");
+            }
+            sensorReading.setPETPolicy("LOCATION", 0);
+            sensorReading.setPETPolicy("SPEED", SpeedSituation == 1? UserSpeedPolicy: 0);
+            sensorReading.setPETPolicy("IMAGE", CameraSituation == 1? UserCameraPolicy: 0);
+            return sensorReading;
+//            }
+        }
+    }
+
+    /**
+     * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
+     * same type of data.
+     * @param <T> input data type
+     */
+    public static class applyPETForImage<T> extends RichMapFunction<ImageWrapper, ImageWrapper> {
+        private PETLoader<T> PETLoader;
+        private Integer id;
+        private String confPath;
+        private final String Type="IMAGE";
+
+        /**
+         * Constructor method
+         * @param confPath: The configuration file, normally will be given in the conf file.
+         */
+        public applyPETForImage(String confPath) {
+            this.confPath = confPath;
+            this.id = 0;
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            // Load and initialise the PET method
+            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.initialize();
+//            ClassLoader userCodeClassLoader = getRuntimeContext().getUserCodeClassLoader();
+////            userCodeClassLoader.loadClass()
+        }
+
+
+        public void reloadPET() throws Exception {
+//            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.reloadPET(id);
+            PETLoader.instantiate();
+        }
+
+        /**
+         * Depends on the PET TYPE, process the data with the PETLoader
+         * @param sensorReading: input from the stream
+         * @return: output of the modified stream
+         * @throws Exception
+         */
+        @Override
+        public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
+//            String type = PET.getType();
+            if (id != sensorReading.getPETPolicy().get(Type)) {
+                id = sensorReading.getPETPolicy().get(Type);
+                reloadPET();
+            }
+            byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
+            sensorReading.setImage(invoke_img);
+            return sensorReading;
+        }
+    }
+
 
     /**
      * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
@@ -437,24 +558,27 @@ public class PETUtils implements Serializable {
     }
 
     public static class dataEvaluationRedis extends RichMapFunction<SensorReading, SensorReading>{
-        private final Tuple2<String, String> RedisConfig;
-        private transient JedisPool jedisPool;
+        private final Tuple3<String, String, String> RedisConfig;
+        private transient Jedis jedis;
+//        private transient JedisPool jedisPool;
 
 
-        public dataEvaluationRedis(Tuple2<String, String> dataFetcher) {
+        public dataEvaluationRedis(Tuple3<String, String, String> dataFetcher) {
             super();
             this.RedisConfig = dataFetcher;
         }
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+//            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            jedis = new Jedis(this.RedisConfig.f2);
         }
 
         @Override
         public void close() throws Exception {
             super.close();
-            this.jedisPool.destroy();
+            this.jedis.close();
+//            this.jedisPool.destroy();
         }
 
         @Override
@@ -493,7 +617,7 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class saveDataAsImage implements SinkFunction<SensorReading>{
+    public static class saveDataAsImage implements SinkFunction<ImageWrapper>{
         private final String OutputPath;
         private final String DataType;
         private Integer counter = 0;
@@ -504,7 +628,7 @@ public class PETUtils implements Serializable {
         }
 
         @Override
-        public void invoke(SensorReading value, Context context) throws Exception {
+        public void invoke(ImageWrapper value, Context context) throws Exception {
 //            try(FileOutputStream fos = new FileOutputStream(
 //                    OutputPath + counter + ".png")){
 //                counter ++;
@@ -512,12 +636,13 @@ public class PETUtils implements Serializable {
 //                fos.write(value.getImg());
 //            }
 
-            System.out.println(value.getImg());
-            try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
+//            System.out.println(value.getImage());
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
                 System.out.println(bais);
                 BufferedImage image = ImageIO.read(bais);
                 counter ++;
                 String filePath = OutputPath + counter + "." + DataType;
+                System.out.println(filePath);
 
                 ImageIO.write(image, DataType, new File(filePath));
 
@@ -568,51 +693,54 @@ public class PETUtils implements Serializable {
      * Update the new Policy and situation changes to the redis server
      */
     public static class changeUserPolicyInRedis extends RichSinkFunction<String> {
-        private final Tuple2<String, String> RedisConfig;
-        private transient JedisPool jedisPool;
+        private final Tuple3<String, String, String> RedisConfig;
+//        private transient JedisPool jedisPool;
+        private transient Jedis jedis;
         private Integer UserSpeedPolicy;
         private Integer UserLocationPolicy;
         private Integer UserCameraPolicy;
         private Integer SpeedSituation;
         private Integer CameraSituation;
 
-        public changeUserPolicyInRedis(Tuple2<String, String> dataFetcher) {
+        public changeUserPolicyInRedis(Tuple3<String, String, String> dataFetcher) {
             super();
             this.RedisConfig = dataFetcher;
         }
 
         public void getPolicy(){
-            try (Jedis jedis = this.jedisPool.getResource()) {
-                UserSpeedPolicy = Integer.valueOf(jedis.get("UserSpeedPolicy"));
-                UserLocationPolicy = Integer.valueOf(jedis.get("UserLocationPolicy"));
-                UserCameraPolicy = Integer.valueOf(jedis.get("UserCameraPolicy"));
+//            try (Jedis jedis = this.jedisPool.getResource()) {
+                UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
+                UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
+                UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
                 SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
                 CameraSituation = Integer.valueOf(jedis.get("CameraSituation"));
-            }
+//            }
         }
 
         public void setPolicy(){
-            try (Jedis jedis = this.jedisPool.getResource()) {
-                jedis.set("UserSpeedPolicy", String.valueOf(UserSpeedPolicy));
-                jedis.set("UserLocationPolicy", String.valueOf(UserLocationPolicy));
-                jedis.set("UserCameraPolicy", String.valueOf(UserCameraPolicy));
+//            try (Jedis jedis = this.jedisPool.getResource()) {
+                jedis.set("SpeedPet", String.valueOf(UserSpeedPolicy));
+                jedis.set("LocationPET", String.valueOf(UserLocationPolicy));
+                jedis.set("CameraPET", String.valueOf(UserCameraPolicy));
                 jedis.set("SpeedSituation", String.valueOf(SpeedSituation));
                 jedis.set("CameraSituation", String.valueOf(CameraSituation));
                 jedis.set("dirty", "1");
-            }
+//            }
         }
 
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
-            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+//            this.jedisPool = DataFetcher.jedisPoolFactory(this.RedisConfig);
+            jedis = new Jedis(this.RedisConfig.f2);
             this.getPolicy();
         }
 
         @Override
         public void close() throws Exception {
             super.close();
-            this.jedisPool.destroy();
+            this.jedis.close();
+//            this.jedisPool.destroy();
         }
 
         @Override

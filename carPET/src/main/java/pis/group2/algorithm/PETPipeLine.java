@@ -2,6 +2,7 @@ package pis.group2.algorithm;
 
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
@@ -39,7 +40,7 @@ public abstract class PETPipeLine {
     protected DataStreamSource<byte[]> imageSource;
     protected DataStreamSource<String> dataSource;
     protected DataStreamSource<String> userSource;
-    protected Tuple2<String, String> RedisConfig;
+    protected Tuple3<String, String, String> RedisConfig;
 
     /**
      * create the Pipeline and initialisation, read the configurations
@@ -49,7 +50,7 @@ public abstract class PETPipeLine {
     public PETPipeLine(String confPath) throws Exception {
         this.confPath = confPath;
         this.env = StreamExecutionEnvironment.getExecutionEnvironment();
-        this.GUI = new SinkGUI();
+        this.GUI = new SinkGUI(1);
         loadConfig();
         this.buildPipeline();
         this.execute();
@@ -76,7 +77,8 @@ public abstract class PETPipeLine {
         USERTOPIC = (String) jsonObject.get("KAFKA-USERTOPIC");
         String redisSer = (String) jsonObject.get("REDIS-SERVER");
         String redisPass = (String) jsonObject.get("REDIS-PASS");
-        RedisConfig = new Tuple2<>(redisSer, redisPass);
+        String awsJedis = (String) jsonObject.get("AWS-JEDIS");
+        RedisConfig = new Tuple3<>(redisSer, redisPass, awsJedis);
     }
 
     /**

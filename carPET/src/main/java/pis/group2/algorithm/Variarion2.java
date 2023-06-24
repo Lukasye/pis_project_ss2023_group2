@@ -24,13 +24,21 @@ public class Variarion2 {
                 // Determine Evaluation
                 // As the userSource only provide configurations, it goes directly into the sink
                 userSource.addSink(new PETUtils.changeUserPolicyInRedis(RedisConfig));
-                SingleOutputStreamOperator<SensorReading> evaluatedSensorReadingStream = SensorReadingStream.map(new PETUtils.retrieveDataPolicy(RedisConfig));
+                SingleOutputStreamOperator<SensorReading> evaluatedSensorReadingStream =
+                        SensorReadingStream.map(new PETUtils.retrieveDataPolicy(RedisConfig));
+                SingleOutputStreamOperator<ImageWrapper> evaluatedImageStream =
+                        ImageWrapperStream.map(new PETUtils.retrieveImagePolicy(RedisConfig));
 
                 // Apply PET
-                SingleOutputStreamOperator<SensorReading> dataResultStream = evaluatedSensorReadingStream.map(new PETUtils.applyPET<>(PETconfpath, "LOCATION"));
+                SingleOutputStreamOperator<SensorReading> dataResultStream = evaluatedSensorReadingStream
+                        .map(new PETUtils.applyPET<>(PETconfpath, "LOCATION"))
+                        .map(new PETUtils.applyPET<>(PETconfpath, "SPEED"));
+                SingleOutputStreamOperator<ImageWrapper> imageResultStream = evaluatedImageStream
+                        .map(new PETUtils.applyPETForImage<>(PETconfpath));
 
                 // Sink
-                dataResultStream.print();
+                dataResultStream.print("Data");
+                imageResultStream.addSink(new PETUtils.saveDataAsImage(ImageOutputPath, "jpg"));
 
             }
         };

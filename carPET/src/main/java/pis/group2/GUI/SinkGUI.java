@@ -7,13 +7,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class SinkGUI extends JFrame implements ActionListener {
-    private final JLabel Camera;
-    private final JTextArea SpeedInfo;
-    private final JTextArea LocationInfo;
-    private final JTextArea GeneralInfo;
+    private JLabel Camera;
+    private JTextArea SpeedInfo;
+    private JTextArea LocationInfo;
+    private JTextArea GeneralInfo;
 
-    public SinkGUI(){
+    public SinkGUI(Integer Type){
         // Initialize
+        switch (Type){
+            case 1: variation1(); break;
+            case 2: variation2();break;
+            default:
+                System.out.println("No such variation!");
+        }
+
+//        this.setVisible(true);
+    }
+
+    public void variation1(){
         this.setTitle("FlinkDataSink");
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,8 +68,24 @@ public class SinkGUI extends JFrame implements ActionListener {
         this.add(GeneralInfo);
         this.add(LocationInfo);
         this.add(SpeedInfo);
+    }
 
-//        this.setVisible(true);
+    public void variation2(){
+        this.setTitle("FlinkImageSink");
+        this.setResizable(false);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setSize(1200, 620);
+        this.setLayout(null);
+        this.getContentPane().setBackground(new Color(0Xffffff));
+
+        //create component
+        Camera = new JLabel();
+        Camera.setText("Camera");
+        Camera.setHorizontalTextPosition(JLabel.CENTER);
+        Camera.setVerticalTextPosition(JLabel.BOTTOM);
+        Camera.setForeground(new Color(0x000000));
+        Camera.setFont(new Font("Arial", Font.PLAIN, 20));
+        Camera.setBounds(20, 0, 1200, 600);
     }
 
     public void addImage(String path){
@@ -93,12 +120,16 @@ public class SinkGUI extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SinkGUI sinkGUI = new SinkGUI();
+//        SinkGUI sinkGUI = new SinkGUI(1);
+//        sinkGUI.addImage("src/main/resources/gui/test0.jpg");
+//        sinkGUI.addGeneralInfo("asdfasdfasd");
+//        sinkGUI.addSpeedInfo("12312");
+//        sinkGUI.addLocationInfo("112312123");
+//        sinkGUI.setVisible(true);
+        SinkGUI sinkGUI = new SinkGUI(2);
         sinkGUI.addImage("src/main/resources/gui/test0.jpg");
-        sinkGUI.addGeneralInfo("asdfasdfasd");
-        sinkGUI.addSpeedInfo("12312");
-        sinkGUI.addLocationInfo("112312123");
-        sinkGUI.setVisible(true);
+        sinkGUI.foolRefresh();
+
     }
 
 }

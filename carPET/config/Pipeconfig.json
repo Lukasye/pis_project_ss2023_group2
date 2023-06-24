@@ -1,7 +1,7 @@
 {
   "PET-CONF": "config/PETconfig.json",
   "TESTDATA-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data",
-  "IMAGE-OUTPUT-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/",
+  "IMAGE-OUTPUT-PATH": "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\",
   "USER-CONF": "config/Userconfig.json",
   "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
 
@@ -13,5 +13,6 @@
   "KAFKA-USERTOPIC": "test-user-input",
 
   "REDIS-SERVER" : "192.168.1.13",
-  "REDIS-PASS": "123456"
+  "REDIS-PASS": "123456",
+  "AWS-JEDIS": "redis://default:123456@redis-17361.c81.us-east-1-2.ec2.cloud.redislabs.com:17361"
 }

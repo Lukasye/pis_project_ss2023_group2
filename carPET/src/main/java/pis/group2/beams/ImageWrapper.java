@@ -1,5 +1,7 @@
 package pis.group2.beams;
 
+import java.util.Arrays;
+
 public class ImageWrapper extends dataWrapper{
     private byte[] Image;
     private Double Timestamp;
@@ -33,5 +35,15 @@ public class ImageWrapper extends dataWrapper{
 
     public void setTimestamp(Double timestamp) {
         Timestamp = timestamp;
+    }
+
+
+    @Override
+    public String toString() {
+        return "ImageWrapper{" +
+                "Image=" + (this.Image != null) +
+                ", Timestamp=" + Timestamp +
+                ", PETPolicy=" + PETPolicy +
+                '}';
     }
 }
