@@ -10,17 +10,21 @@ public class ControlPanel extends JFrame {
 
     private JComboBox<Integer> menu1;
     private JComboBox<Integer> menu2;
-    private JButton button1;
-    private JButton button2;
+    private JButton resetButton;
+    private JButton runButton;
+    private JButton writeButton;
     private JTextArea displayArea;
     private JTextArea editArea;
+    private JCheckBox LocationSituation;
+    private JCheckBox SpeedSituation;
+    private JCheckBox CameraSituation;
     private UserInterface ui;
 
     public ControlPanel() throws IOException {
         ui = new UserInterface("src/main/resources/Dataconfig.json");
         setTitle("Control Panel");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 400);
+        setSize(400, 450);
         setLayout(new FlowLayout());
 
         // Create menus
@@ -30,8 +34,9 @@ public class ControlPanel extends JFrame {
         menu2 = new JComboBox<>(delayTime);
 
         // Create buttons
-        button1 = new JButton("Run");
-        button2 = new JButton("Reset");
+        resetButton = new JButton("Reset");
+        runButton = new JButton("Run");
+        writeButton = new JButton("Write");
 
         // Create text display area
         displayArea = new JTextArea(10, 30);
@@ -40,26 +45,33 @@ public class ControlPanel extends JFrame {
         // Create text edit area
         editArea = new JTextArea(5, 30);
 
+        // Create switches
+        LocationSituation = new JCheckBox("Location");
+        SpeedSituation = new JCheckBox("Speed");
+        CameraSituation = new JCheckBox("Camera");
+
         // Add components to the frame
         add(menu1);
         add(menu2);
-        add(button1);
-        add(button2);
+        add(resetButton);
+        add(runButton);
         add(new JScrollPane(displayArea));
         add(new JScrollPane(editArea));
+        add(LocationSituation);
+        add(SpeedSituation);
+        add(CameraSituation);
+        add(writeButton);
 
         // Add event listeners
-        button1.addActionListener(new ActionListener() {
+        resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedValue1 = (int) menu1.getSelectedItem();
-                int selectedValue2 = (int) menu2.getSelectedItem();
-//                int result = selectedValue1 + selectedValue2;
-//                displayArea.append("Button 1 clicked. Sum: " + result + "\n");
+                ui.resetPointer();
+                displayArea.append("Pointer reset to 1.\n");
             }
         });
 
-        button2.addActionListener(new ActionListener() {
+        runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int num = (int) menu1.getSelectedItem();
@@ -67,13 +79,49 @@ public class ControlPanel extends JFrame {
                 try {
                     for (int i = 0; i < num; i++) {
                         ui.sendSingleData((double) delay);
-                        displayArea.append(" (" + i + "/" +  num + ") GPS and IMG data published!\n");
+                        displayArea.append(" (" + (i+1) + "/" +  num + ") GPS and IMG data published!\n");
                     }
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
+            }
+        });
+
+        LocationSituation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean selected = LocationSituation.isSelected();
+//                ui.sendCommand("write situation,location");
+                displayArea.append("Location: " + (selected ? "Activate" : "Deactivate") + "\n");
+            }
+        });
+
+        SpeedSituation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean selected = SpeedSituation.isSelected();
+                ui.sendCommand("situation,speed,"+ (selected? "1": "0"));
+                displayArea.append("Speed: " + (selected ? "Activate" : "Deactivate") + "\n");
+            }
+        });
+
+        CameraSituation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean selected = CameraSituation.isSelected();
+                ui.sendCommand("situation,camera,"+ (selected? "1": "0"));
+                displayArea.append("Camera: " + (selected ? "Activate" : "Deactivate") + "\n");
+            }
+        });
+
+        writeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String text = editArea.getText();
+                ui.sendCommand(text);
+                displayArea.append("Write: " + text + "\n");
             }
         });
     }

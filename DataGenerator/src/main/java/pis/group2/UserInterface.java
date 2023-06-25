@@ -96,11 +96,19 @@ public class UserInterface {
                 command = elements[1];
                 runScript("src/main/resources/scripts/" + command);
             case "reset":
-                data2Kafka.reset();
-                img2Kafka.reset();
+                this.resetPointer();
             default:
                 System.out.println("Not a valid command!");
         }
+    }
+
+    public void resetPointer(){
+        data2Kafka.reset();
+        img2Kafka.reset();
+    }
+
+    public void sendCommand(String command){
+        usr2Kafka.sendCommand(command);
     }
 
     public void sendData(Integer counter, Double timeout) throws IOException, InterruptedException {
