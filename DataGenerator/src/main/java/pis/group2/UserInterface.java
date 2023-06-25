@@ -107,9 +107,15 @@ public class UserInterface {
         for (int i = 0; i < counter; i++){
             data2Kafka.sendData();
             img2Kafka.sendData();
-            TimeUnit.MILLISECONDS.sleep((long) (timeout * 1000));
+            TimeUnit.MILLISECONDS.sleep((long) (timeout * 100));
+            System.out.println(" (" + i + "/" +  counter + ") GPS and IMG data published!");
         }
-        System.out.println(" " + counter + "GPS and IMG data published!");
+    }
+
+    public void sendSingleData(Double timeout) throws IOException, InterruptedException {
+        data2Kafka.sendData();
+        img2Kafka.sendData();
+        TimeUnit.MILLISECONDS.sleep((long) (timeout * 100));
     }
 
     public void runScript(String path) throws IOException {

@@ -10,31 +10,30 @@ import scala.Tuple2;
 
 public class Variation1 {
     public static void main(String[] args) throws Exception {
-        new PETPipeLine("/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/Pipeconfig.json") {
+        if (args.length != 1){
+            System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");
+            return;
+        }
+        String path = args[0];
+        new PETPipeLine(path) {
             @Override
             void buildPipeline() {
                 env.setParallelism(1);
                 // Read Image from kafka topic
-//                FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
-//                        IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
-//                FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
-//                        BOOTSTRAPSERVER, GROUPID);
-//                FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
-//                        BOOTSTRAPSERVER, GROUPID);
-//                DataStreamSource<byte[]> imageSource = env.addSource(kafkaSource);
-//                DataStreamSource<String> dataSource = env.addSource(sensorDataConsumer);
-//                DataStreamSource<String> userSource = env.addSource(userDataConsumer);
                 initKafka();
 
                 // Merge two Stream
                 ConnectedStreams<byte[], String> connectedDataStream = imageSource.connect(dataSource);
-                SingleOutputStreamOperator<SensorReading> SensorReadingStream = connectedDataStream.flatMap(new PETUtils.assembleSensorReading());
+                SingleOutputStreamOperator<SensorReading> SensorReadingStream =
+                        connectedDataStream.flatMap(new PETUtils.assembleSensorReading());
 
                 // Duplicate filter
-                SingleOutputStreamOperator<SensorReading> filteredStream = SensorReadingStream.filter(new PETUtils.duplicateCheck());
+                SingleOutputStreamOperator<SensorReading> filteredStream =
+                        SensorReadingStream.filter(new PETUtils.duplicateCheck());
 
                 // Evaluation
-                SingleOutputStreamOperator<SensorReading> evaluatedStream = filteredStream.connect(userSource).flatMap(new PETUtils.evaluateSensorReading());
+                SingleOutputStreamOperator<SensorReading> evaluatedStream =
+                        filteredStream.connect(userSource).flatMap(new PETUtils.evaluateSensorReading());
 
                 //Apply PET
                 SingleOutputStreamOperator<SensorReading> resultStream = evaluatedStream.map(new PETUtils.applyPET<Double>(PETconfpath, "SPEED"))

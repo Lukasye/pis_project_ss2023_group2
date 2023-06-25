@@ -11,7 +11,12 @@ import java.nio.channels.Pipe;
 
 public class Variarion2 {
     public static void main(String[] args) throws Exception {
-        new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
+        if (args.length != 1){
+            System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");
+            return;
+        }
+        String path = args[0];
+        new PETPipeLine(path) {
             @Override
             void buildPipeline() {
                 env.setParallelism(1);

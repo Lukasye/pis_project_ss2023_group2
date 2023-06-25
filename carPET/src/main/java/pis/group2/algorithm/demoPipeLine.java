@@ -8,6 +8,7 @@ import pis.group2.utils.PETUtils;
 
 public class demoPipeLine {
     public static void main(String[] args) throws Exception {
+
         PETPipeLine petPipeLine = new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
             @Override
             void buildPipeline() {
