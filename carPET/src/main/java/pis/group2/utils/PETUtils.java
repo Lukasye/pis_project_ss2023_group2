@@ -802,7 +802,7 @@ public class PETUtils implements Serializable {
     public static class SensorReadingToCSV extends RichSinkFunction<SensorReading>{
         private final String filePath;
         private final String delimiter;
-        private OutputFormat<String> outputFormat;
+        private CsvOutputFormat<String> outputFormat;
 
         public SensorReadingToCSV(String filePath, String delimiter) {
             this.filePath = filePath;
@@ -827,8 +827,10 @@ public class PETUtils implements Serializable {
                 tmp.append(pet).append(delimiter);
             }
             tmp.deleteCharAt(tmp.length() - 1);
-            tmp.append("\n");
+//            tmp.append("\n");
+            System.out.println(tmp);
             outputFormat.writeRecord(tmp.toString());
+            outputFormat.flush();
         }
 
         public void close() throws Exception {

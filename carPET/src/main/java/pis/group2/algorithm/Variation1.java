@@ -42,7 +42,10 @@ public class Variation1 {
 
                 // Sink
 //                resultStream.addSink(new PETUtils.showInGUI(GUI));
-                resultStream.addSink(new PETUtils.SensorReadingToCSV("/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/timerecord.csv", ","));
+                resultStream.print("Result");
+                resultStream.addSink(new PETUtils.SensorReadingToCSV(
+                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\timerecord.csv",
+                        ","));
 
             }
         };

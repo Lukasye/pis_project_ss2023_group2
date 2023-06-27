@@ -35,4 +35,10 @@ public class CsvOutputFormat<T> implements OutputFormat<T> {
             writer.close();
         }
     }
+
+    public void flush() throws IOException {
+        if (writer != null){
+            writer.flush();
+        }
+    }
 }
