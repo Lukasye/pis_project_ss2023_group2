@@ -1,5 +1,7 @@
 package pis.group2.beams;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -17,7 +19,7 @@ public class dataWrapper {
     }
 
     public void recordTimer(){
-        TimerRecord.add(System.currentTimeMillis());
+        TimerRecord.add(System.nanoTime());
     }
 
     public ArrayList<Long> getTimerRecord() {
