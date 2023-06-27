@@ -57,7 +57,7 @@ public class UserInterface {
         }
     }
 
-    public void logic(String userInput) throws IOException, InterruptedException {
+    public String logic(String userInput) throws IOException, InterruptedException {
         int counter;
         double timeout;
         String command;
@@ -65,41 +65,45 @@ public class UserInterface {
         switch (elements[0]){
             case "run":
                 if (elements.length != 2) {
-                    System.out.println("Invalid 'run' argument!");
-                    break;
+//                    System.out.println("Invalid 'run' argument!");
+                    return "Invalid 'run' argument!";
                 }
                 counter = Integer.parseInt(elements[1]);
                 sendData(counter, 0.0);
-                break;
+                return "run True";
             case "delayrun":
                 if (elements.length != 3){
                     System.out.println("Invalid 'delayrun' argument!");
+                    return "Invalid 'delayrun' argument!";
                 }
                 counter =Integer.parseInt(elements[1]);
                 timeout = Double.parseDouble(elements[2]);
                 sendData(counter, timeout);
-                break;
+                return "Delayrun True";
             case "write":
                 if (elements.length != 2) {
                     System.out.println("Invalid 'write' argument!");
-                    break;
+                    return "Invalid 'write' argument!";
                 }
                 command = elements[1];
                 usr2Kafka.sendCommand(command);
                 System.out.println("New usr meg published!");
-                break;
+                return "New usr msg published";
             case "script":
                 if (elements.length != 2) {
                     System.out.println("Invalid 'write' argument!");
                     break;
                 }
                 command = elements[1];
-                runScript("src/main/resources/scripts/" + command);
+                runScriptByPath("src/main/resources/scripts/" + command);
             case "reset":
                 this.resetPointer();
+                return "Pointer reset";
             default:
                 System.out.println("Not a valid command!");
+                return "Not a valid command!";
         }
+        return null;
     }
 
     public void resetPointer(){
@@ -126,7 +130,7 @@ public class UserInterface {
         TimeUnit.MILLISECONDS.sleep((long) (timeout * 100));
     }
 
-    public void runScript(String path) throws IOException {
+    public void runScriptByPath(String path) throws IOException {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader("src/main/resources/script"));

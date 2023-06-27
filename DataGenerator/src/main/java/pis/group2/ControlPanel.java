@@ -120,8 +120,22 @@ public class ControlPanel extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String text = editArea.getText();
-                ui.sendCommand(text);
-                displayArea.append("Write: " + text + "\n");
+//                ui.sendCommand(text);
+                String[] split = text.split("\n");
+                String logic;
+                for (String command: split){
+                    System.out.println(command);
+                    try {
+                        logic = ui.logic(command);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    displayArea.append("Execute: " + command + "\n");
+                    displayArea.append(logic + "\n");
+                }
+
             }
         });
     }
