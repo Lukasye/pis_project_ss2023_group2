@@ -3,6 +3,7 @@ package pis.group2.utils;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -189,6 +190,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public boolean filter(SensorReading sensorReading) throws Exception {
+            sensorReading.recordTimer();
             Double timestamp = sensorReading.getTimestamp();
             if (currentTimeStamp < timestamp) {
                 currentTimeStamp = timestamp;
@@ -415,6 +417,7 @@ public class PETUtils implements Serializable {
          */
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
+            sensorReading.recordTimer();
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
@@ -795,6 +798,47 @@ public class PETUtils implements Serializable {
             return String.valueOf(stringIntegerTuple2.f1);
         }
     }
+
+    public static class SensorReadingToCSV extends RichSinkFunction<SensorReading>{
+        private final String filePath;
+        private final String delimiter;
+        private OutputFormat<String> outputFormat;
+
+        public SensorReadingToCSV(String filePath, String delimiter) {
+            this.filePath = filePath;
+            this.delimiter = delimiter;
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            this.outputFormat = new CsvOutputFormat<>(filePath);
+            this.outputFormat.configure(parameters);
+            this.outputFormat.open(getRuntimeContext().getIndexOfThisSubtask(), getRuntimeContext().getNumberOfParallelSubtasks());
+        }
+
+        @Override
+        public void invoke(SensorReading value, Context context) throws Exception {
+            StringBuilder tmp = new StringBuilder();
+            for (Long time: value.getTimerRecord()){
+                tmp.append(time).append(delimiter);
+            }
+            for (Integer pet: value.getPETPolicy().values()){
+                tmp.append(pet).append(delimiter);
+            }
+            tmp.deleteCharAt(tmp.length() - 1);
+            tmp.append("\n");
+            outputFormat.writeRecord(tmp.toString());
+        }
+
+        public void close() throws Exception {
+            super.close();
+            if (outputFormat != null) {
+                outputFormat.close();
+            }
+        }
+    }
+
     // Helper Functions
 
     /**

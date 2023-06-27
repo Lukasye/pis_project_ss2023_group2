@@ -1,5 +1,5 @@
 {
-  "GPS-DATA": "src/main/resources/gps_info.csv",
+  "GPS-DATA": "/Users/lukasye/Projects/pis_project_ss2023_group2/DataGenerator/src/main/resources/gps_info.csv",
   "IMG-DATA": "/Users/lukasye/Datasets/SITTI930/img_resize",
   "DATA-TYPE": "CSV",
   "BOOTSTRAPSERVER": "localhost:9092"

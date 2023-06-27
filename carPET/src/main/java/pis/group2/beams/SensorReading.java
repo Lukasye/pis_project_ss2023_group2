@@ -151,6 +151,7 @@ public class SensorReading extends dataWrapper{
                 ", timestamp=" + timestamp +
                 ", vel=" + vel +
                 ", Image=" + (this.img != null) +
+                ", TimeRecord=" + this.TimerRecord +
                 '}';
     }
 

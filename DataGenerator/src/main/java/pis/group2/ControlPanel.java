@@ -20,8 +20,8 @@ public class ControlPanel extends JFrame {
     private JCheckBox CameraSituation;
     private UserInterface ui;
 
-    public ControlPanel() throws IOException {
-        ui = new UserInterface("src/main/resources/Dataconfig.json");
+    public ControlPanel(String path) throws IOException {
+        ui = new UserInterface(path);
         setTitle("Control Panel");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 450);
@@ -127,12 +127,17 @@ public class ControlPanel extends JFrame {
     }
 
     public static void main(String[] args) {
+        if (args.length != 1){
+            System.out.println("Wrong number of arguments!");
+            return;
+        }
+        String path = args[0];
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 ControlPanel controlPanel = null;
                 try {
-                    controlPanel = new ControlPanel();
+                    controlPanel = new ControlPanel(path);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
