@@ -63,7 +63,7 @@ redis://<username>:<password>@redis-17361.c81.us-east-1-2.ec2.cloud.redislabs.co
 The current situation, policy and an extra dirty byte will be store in the cloud, wo that every process can access with a simple Jedis client(by the way also need to be serialized).
 
 ## Sink GUI
-In the reality those Streamming process shouldn't connect to a GUI sink like that. Since the Database is not the focus in this project, we use this only for demostration.
+In the reality those Streamming process shouldn't connect to a GUI sink like that. Since the Database is not the focus in this project, we use this only for demostration.<br>
 <img src="./img/SinkGUI.png"  width="40%"><br>
 
 ## Implementation of the Pipeline
