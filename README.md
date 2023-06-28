@@ -62,9 +62,20 @@ redis://<username>:<password>@redis-17361.c81.us-east-1-2.ec2.cloud.redislabs.co
 ```
 The current situation, policy and an extra dirty byte will be store in the cloud, wo that every process can access with a simple Jedis client(by the way also need to be serialized).
 
+## Sink GUI
+In the reality those Streamming process shouldn't connect to a GUI sink like that. Since the Database is not the focus in this project, we use this only for demostration.
+<img src="./img/SinkGUI.png"  width="40%"><br>
+
 ## Implementation of the Pipeline
 There are totally two implementation of the pipeline, which shown in the koncept graph below.<br>
 <img src="./img/PipelineImplementation.png"  width="40%"><br>
+
 ### Variation 1
-Variation 1 is shown on the right side, in which the GPS Data and the Image data is merge as a single data POJO object at the beginning, and then passed to the evaluation block and the ApplePET block. The adventage of such kind of design 
+
+Variation 1 is shown on the right side, in which the GPS Data and the Image data is merge as a single data POJO object at the beginning, and then passed to the evaluation block and the ApplePET block. The adventage of such kind of design is that, the state management and PET evaluation would be more convinient. As we don't need to consider the information exchange among the different workers.The structure is more "intuitive". But a huge down side is the complexity to merge two streams toghther, in which one should deal with the order and duplicate of messages±(means we need to find method to ensure exactly-one logic) that's why we need Duplicate filter and an extra MergeSensor(RichCoFlapMapFunction) block.
+
+### Variation 2
+In this variation we deal with the Image and GPS data seperately, so we don't have the logic problem caused by merge Stream. But the problem then would be the management of the global states. Which we applied the Redis database to compromiss this issue.
+
+
 ## Evaluation
