@@ -39,6 +39,7 @@ PETLoader<Tuple2<Double, Double>> pl_loc = new PETLoader<>("config/PETconfig.jso
 The actual content of the PET is not the main focus of this project, hence we just apply the PET developed by Dominik in his [Bachelor thesis](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjS95jhyb3_AhW7gP0HHRspDtkQFnoECB4QAQ&url=https%3A%2F%2Felib.uni-stuttgart.de%2Fbitstream%2F11682%2F12182%2F1%2FBA%2520Dominik%2520Held.pdf&usg=AOvVaw3DbbWmswzYB4PQAMDqNi6e). As we need to use the PET Loader, we first seperate the different algorithmen into many sub JAR package which implments the  `PETProcesse` Interface. So that the JAR can be derictly load into the pipeline. The PETs might not be useful in the real life application after the modification, but it can show the dynamic properties in the evaluation process.
 
 ## DataGenerator
+### Command Line Mode
 For the generating of the data introduced by KITTI dataset. We constructed a DataGenerator, a Java Programm which publish the user specified data to a Kafka Server. And the downstream piprline will subscribe to each topic. So that we utilize the upstream infastructure to make sure no bias in the evaluation and also simplify the implementation. We use totally three topics: `test-data`, `test-image` and `user` to accept String input of GPS data, Bytearray of camera perception and also the user configuration change. The Generator contains a Texture User Interface(TUI) to acept user input, the command suported by the program are listed as follow:
 | Nr. | Command | Parameter | Description |
 | --- | --------------- | ----------------------|----------------------------------------- |
@@ -49,4 +50,21 @@ For the generating of the data introduced by KITTI dataset. We constructed a Dat
 | 5 | script  |-name X|Read the script in script folder with name X and execute the commands in ti|
 | 5 | exit    ||Exit the Generator programm|
 
+### GUI mode
+The Data Generator can also be launched as the form of a Graphical User Interface, where user can directly interact with the buutton and editable text area.<br>
+<img src="./img/DataGeneratorGUI.png"  width="40%">
+
+
+## Redis
+For one variation of the pipeline we use the Redis nosql to work as the global statemanager since the petpolicy state should be maintained in a bird eye view. For simplicity we used the server by Amazon in the cloud, which can be access with the following command:
+```
+redis://<username>:<password>@redis-17361.c81.us-east-1-2.ec2.cloud.redislabs.com:17361
+```
+The current situation, policy and an extra dirty byte will be store in the cloud, wo that every process can access with a simple Jedis client(by the way also need to be serialized).
+
+## Implementation of the Pipeline
+There are totally two implementation of the pipeline, which shown in the koncept graph below.<br>
+<img src="./img/PipelineImplementation.png"  width="40%"><br>
+### Variation 1
+Variation 1 is shown on the right side, in which the GPS Data and the Image data is merge as a single data POJO object at the beginning, and then passed to the evaluation block and the ApplePET block. The adventage of such kind of design 
 ## Evaluation
