@@ -43,7 +43,7 @@ public class Variarion2 {
 
                 // Sink
                 dataResultStream.print("Data");
-                imageResultStream.addSink(new PETUtils.saveDataAsImage(ImageOutputPath, "jpg"));
+                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
 
             }
         };

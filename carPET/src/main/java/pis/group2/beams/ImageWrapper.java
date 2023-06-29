@@ -3,7 +3,6 @@ package pis.group2.beams;
 import java.util.Arrays;
 
 public class ImageWrapper extends dataWrapper{
-    private byte[] Image;
     private Double Timestamp;
 
     public ImageWrapper() {
@@ -21,13 +20,7 @@ public class ImageWrapper extends dataWrapper{
         Timestamp = timestamp;
     }
 
-    public byte[] getImage() {
-        return Image;
-    }
 
-    public void setImage(byte[] image) {
-        Image = image;
-    }
 
     public Double getTimestamp() {
         return Timestamp;

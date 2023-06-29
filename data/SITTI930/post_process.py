@@ -11,16 +11,18 @@ alt.renderers.enable('jupyterlab')
 
 
 def main():
-    colums = ['create', 'location', 'speed', 'camera', 'locationpolicy', 'speedpolicy', 'camerapolicy']
+    colums = ['create', 'location', 'speed', 'camera', 'end', 'locationpolicy', 'speedpolicy', 'camerapolicy']
     df = pd.read_csv('./timerecord.csv', names=colums, header=None)
     # df['create'] = [datetime.fromtimestamp(x) for x in df['create']]
     # for time in ['create', 'location', 'speed', 'camera']:
     #     df[time] = pd.to_datetime(df[time] * 1000000)
     # df['start'] = pd.to_datetime(df['create'])
     # df['end'] = pd.to_datetime(df['camera'])
+    df = df[:100]
     df['createTime'] = df['location'] - df['create']
     df['locationTime'] = df['speed'] - df['location']
     df['speedTime'] = df['camera'] - df['speed']
+    df['imageTime'] = df['end'] - df['camera']
 
     df.sort_values(by=['create'])
     df['start_diff'] = df['create'] - df['create'][0]
@@ -33,7 +35,7 @@ def main():
     bottom = np.zeros(len(df)) + list(df.to_dict()['start_diff'].values())
     print(bottom)
 
-    legend = ['createTime', 'locationTime', 'speedTime']
+    legend = ['createTime', 'locationTime', 'speedTime', 'imageTime']
     for name in legend:
         weight_count = list(df.to_dict()[name].values())
         print(weight_count)
@@ -41,7 +43,9 @@ def main():
         p = ax.bar(species, weight_count, width, bottom=bottom)
         bottom += weight_count
 
-    ax.set_title("Timeline")
+    ax.set_title("Stream Processing Timeline")
+    ax.set_xlabel('Events')
+    ax.set_ylabel('Duration(ns)')
     ax.legend(legend)
 
     plt.show()

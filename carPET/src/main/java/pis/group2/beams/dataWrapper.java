@@ -1,14 +1,12 @@
 package pis.group2.beams;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
 
 public class dataWrapper {
     protected HashMap<String, Integer> PETPolicy;
     protected ArrayList<Long> TimerRecord;
+    protected byte[] Image;
 
     public dataWrapper() {
         PETPolicy = new HashMap<>();
@@ -32,5 +30,13 @@ public class dataWrapper {
 
     public void setPETPolicy(String key, Integer value) {
         this.PETPolicy.put(key, value);
+    }
+
+    public byte[] getImage() {
+        return Image;
+    }
+
+    public void setImage(byte[] image) {
+        Image = image;
     }
 }

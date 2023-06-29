@@ -4,6 +4,7 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
@@ -37,9 +38,9 @@ public abstract class PETPipeLine {
     protected ArrayList<String> PETType;
     protected StreamExecutionEnvironment env;
     protected SinkGUI GUI;
-    protected DataStreamSource<byte[]> imageSource;
-    protected DataStreamSource<String> dataSource;
-    protected DataStreamSource<String> userSource;
+    protected SingleOutputStreamOperator<byte[]> imageSource;
+    protected SingleOutputStreamOperator<String> dataSource;
+    protected SingleOutputStreamOperator<String> userSource;
     protected Tuple3<String, String, String> RedisConfig;
 
     /**
@@ -105,6 +106,18 @@ public abstract class PETPipeLine {
         imageSource = env.addSource(kafkaSource);
         dataSource = env.addSource(sensorDataConsumer);
         userSource = env.addSource(userDataConsumer);
+    }
+
+    public void initKafka(Long timeout){
+        FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
+                IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
+        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
+                BOOTSTRAPSERVER, GROUPID);
+        FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
+                BOOTSTRAPSERVER, GROUPID);
+        imageSource = env.addSource(kafkaSource).setBufferTimeout(timeout);
+        dataSource = env.addSource(sensorDataConsumer).setBufferTimeout(timeout);
+        userSource = env.addSource(userDataConsumer).setBufferTimeout(timeout);
     }
 
 

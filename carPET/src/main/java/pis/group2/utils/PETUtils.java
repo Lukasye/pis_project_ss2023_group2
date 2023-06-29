@@ -88,7 +88,7 @@ public class PETUtils implements Serializable {
         @Override
         public SensorReading map(byte[] bytes) throws Exception {
             SensorReading tmp = new SensorReading();
-            tmp.setImg(bytes);
+            tmp.setImage(bytes);
             return tmp;
         }
     }
@@ -242,6 +242,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
+                sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
                 // check the dirty bit, if the data is already modified, update the policy
                 if (Integer.parseInt(jedis.get("dirty")) == 1){
@@ -299,6 +300,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
+            sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
             // check the dirty bit, if the data is already modified, update the policy
             if (Integer.parseInt(jedis.get("dirty")) == 1){
@@ -354,10 +356,10 @@ public class PETUtils implements Serializable {
          * Depends on the PET TYPE, process the data with the PETLoader
          * @param sensorReading: input from the stream
          * @return: output of the modified stream
-         * @throws Exception
          */
         @Override
         public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
+            sensorReading.recordTimer();
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
@@ -421,6 +423,7 @@ public class PETUtils implements Serializable {
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
+                System.out.println("ApplyPET: ReloadPET......");
                 reloadPET();
             }
             switch (Type) {
@@ -433,8 +436,8 @@ public class PETUtils implements Serializable {
                     sensorReading.setLocation(invoke_pos);
                     break;
                 case "IMAGE":
-                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImg()).get(0);
-                    sensorReading.setImg(invoke_img);
+                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
+                    sensorReading.setImage(invoke_img);
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + Type);
@@ -607,20 +610,7 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImg())) {
-            System.out.println(bais);
-            BufferedImage image = ImageIO.read(bais);
-            String filePath = OutputPath + counter + "." + DataType;
-
-            ImageIO.write(image, DataType, new File(filePath));
-
-        } catch (IOException e) {
-            System.out.println("Error writing image file: " + e.getMessage());
-        }
-    }
-
-    public static class saveDataAsImage implements SinkFunction<ImageWrapper>{
+    public static class saveDataAsImage<T extends dataWrapper> implements SinkFunction<T>{
         private final String OutputPath;
         private final String DataType;
         private Integer counter = 0;
@@ -631,7 +621,7 @@ public class PETUtils implements Serializable {
         }
 
         @Override
-        public void invoke(ImageWrapper value, Context context) throws Exception {
+        public void invoke(T value, Context context) throws Exception {
 //            try(FileOutputStream fos = new FileOutputStream(
 //                    OutputPath + counter + ".png")){
 //                counter ++;
@@ -664,7 +654,7 @@ public class PETUtils implements Serializable {
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
             SwingUtilities.invokeAndWait(()->{
-                this.GUI.addImageFromByteArray(value.getImg());
+                this.GUI.addImageFromByteArray(value.getImage());
                 this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
                 this.GUI.addLocationInfo(String.valueOf(value.getPosition()));
                 this.GUI.addSpeedInfo(String.valueOf(value.getVel()));
@@ -819,6 +809,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
+            value.recordTimer();
             StringBuilder tmp = new StringBuilder();
             for (Long time: value.getTimerRecord()){
                 tmp.append(time).append(delimiter);
@@ -828,7 +819,6 @@ public class PETUtils implements Serializable {
             }
             tmp.deleteCharAt(tmp.length() - 1);
 //            tmp.append("\n");
-            System.out.println(tmp);
             outputFormat.writeRecord(tmp.toString());
             outputFormat.flush();
         }
@@ -861,4 +851,16 @@ public class PETUtils implements Serializable {
                 Image);
     }
 
+    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
+            System.out.println(bais);
+            BufferedImage image = ImageIO.read(bais);
+            String filePath = OutputPath + counter + "." + DataType;
+
+            ImageIO.write(image, DataType, new File(filePath));
+
+        } catch (IOException e) {
+            System.out.println("Error writing image file: " + e.getMessage());
+        }
+    }
 }

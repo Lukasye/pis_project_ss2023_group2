@@ -14,8 +14,6 @@ public class SensorReading extends dataWrapper{
     private Double acc_y;
     private Double vel;
 
-    private byte[] img;
-
     public SensorReading() {
         super();
     }
@@ -52,7 +50,7 @@ public class SensorReading extends dataWrapper{
         this.acc_x = acc_x;
         this.acc_y = acc_y;
         this.vel = vel;
-        this.img = Image;
+        this.Image = Image;
     }
 
 
@@ -135,14 +133,6 @@ public class SensorReading extends dataWrapper{
         this.vel = vel;
     }
 
-    public byte[] getImg() {
-        return img;
-    }
-
-    public void setImg(byte[] img) {
-        this.img = img;
-    }
-
     @Override
     public String toString() {
         return "SensorReading{" +
@@ -150,7 +140,7 @@ public class SensorReading extends dataWrapper{
                 ", location=" + location +
                 ", timestamp=" + timestamp +
                 ", vel=" + vel +
-                ", Image=" + (this.img != null) +
+                ", Image=" + (this.Image != null) +
                 ", TimeRecord=" + this.TimerRecord +
                 '}';
     }

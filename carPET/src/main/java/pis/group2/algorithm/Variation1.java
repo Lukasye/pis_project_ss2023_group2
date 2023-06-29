@@ -20,7 +20,7 @@ public class Variation1 {
             void buildPipeline() {
                 env.setParallelism(1);
                 // Read Image from kafka topic
-                initKafka();
+                initKafka(1000L);
 
                 // Merge two Stream
                 ConnectedStreams<byte[], String> connectedDataStream = imageSource.connect(dataSource);
@@ -46,6 +46,7 @@ public class Variation1 {
                 resultStream.addSink(new PETUtils.SensorReadingToCSV(
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\timerecord.csv",
                         ","));
+                resultStream.addSink(new PETUtils.saveDataAsImage<>(ImageOutputPath, FILEEXTENSION));
 
             }
         };
