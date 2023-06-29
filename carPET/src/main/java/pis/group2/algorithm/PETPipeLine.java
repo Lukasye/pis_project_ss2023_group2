@@ -1,6 +1,8 @@
 package pis.group2.algorithm;
 
+import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -10,6 +12,7 @@ import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -106,6 +109,23 @@ public abstract class PETPipeLine {
         imageSource = env.addSource(kafkaSource);
         dataSource = env.addSource(sensorDataConsumer);
         userSource = env.addSource(userDataConsumer);
+    }
+
+    public void initKafkaOnline(){
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "quiet-mammoth-10014-eu1-kafka.upstash.io:9092");
+        props.put("sasl.mechanism", "SCRAM-SHA-256");
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"cXVpZXQtbWFtbW90aC0xMDAxNCR5Q9SExiuD84R2x6tDInE2vRF9AdFtb1mH8_o\" password=\"1f1cc05b6f0a4e47828093bff177a4dc\";");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("auto.offset.reset", "earliest");
+        props.put("group.id", "$GROUP_NAME");
+        FlinkKafkaConsumer011<String> sensorDataConsumer = new FlinkKafkaConsumer011<>(GPSTOPIC, new SimpleStringSchema(), props);
+        dataSource = env.addSource(sensorDataConsumer);
+        FlinkKafkaConsumer011<String> userConsumer = new FlinkKafkaConsumer011<>(USERTOPIC, new SimpleStringSchema(), props);
+        imageSource = null;
+        userSource = env.addSource(userConsumer);
     }
 
     public void initKafka(Long timeout){
