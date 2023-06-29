@@ -1,12 +1,12 @@
 # Start Script
 write change,1,1,1
-run 50
+delayrun 50 1
 write situation,camera
-run 50
+delayrun 50 1
 write situation,speed
-run 50
+delayrun 50 1
 write situation,speed
-run 50
+delayrun 50 1
 # Test the activate and deactivate of camera environment
 write situation,camera
 run 1
@@ -33,7 +33,7 @@ run 1
 write situation,camera
 run 1
 # Foobar
-run 50
+delayrun 50 1
 # Test User change policy
 write change,2,1,1
 run 1
@@ -83,5 +83,5 @@ write change,2,1,1
 run 1
 write change,1,1,1
 run 1
-run 50
+delayrun 50 1
 # End Script
