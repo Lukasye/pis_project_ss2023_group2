@@ -1,10 +1,12 @@
 package pis.group2.PETPipeLine;
 
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -18,12 +20,16 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import pis.group2.GUI.SinkGUI;
 import pis.group2.Jedis.DataFetcher;
+import pis.group2.beams.SingleReading;
 import pis.group2.utils.PETUtils;
+import pis.group2.utils.streamSchneider;
 
+import javax.sql.DataSource;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 public abstract class PETPipeLine {
@@ -153,5 +159,20 @@ public abstract class PETPipeLine {
         return consumer;
     }
 
+    public static HashMap<String, DataStream<SingleReading<?>>> SplitStringDataSource(DataStream<String> input, ArrayList<String> NameList){
+        HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = new HashMap<>();
+        for (int i = 0; i < NameList.size(); i++) {
+            int finalI = i;
+            String name = NameList.get(i);
+            stringDataStreamHashMap.put(name, input.map(new MapFunction<String, SingleReading<?>>() {
+                @Override
+                public SingleReading<?> map(String s) throws Exception {
+                    String[] split = s.split(",");
+                    return new SingleReading<>(split[finalI], name) ;
+                }
+            }));
+        }
+        return stringDataStreamHashMap;
+    }
 
 }

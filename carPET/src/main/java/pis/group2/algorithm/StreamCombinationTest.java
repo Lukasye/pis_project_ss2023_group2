@@ -6,12 +6,12 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
+import pis.group2.beams.SingleReading;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static pis.group2.PETLoader.StreamLoader.generateStreams;
-import static pis.group2.PETLoader.StreamLoader.mergeStream;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class StreamCombinationTest {
@@ -26,24 +26,32 @@ public class StreamCombinationTest {
             public void buildPipeline() {
                 env.setParallelism(1);
 
-                ArrayList<Integer> integers = new ArrayList<>();
-                integers.add(1);
-                integers.add(2);
-                integers.add(3);
+                ArrayList<String> names = new ArrayList<>();
+                names.add("Longitude");
+                names.add("Latitude");
+                names.add("Altitude");
+                names.add("Speed");
 
-                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
+                ArrayList<String> selectedNames = new ArrayList<>();
+                selectedNames.add("Longitude");
+                selectedNames.add("Altitude");
+                selectedNames.add("Speed");
+
+
+                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
                 DataStreamSource<String> dataStream = env.readTextFile(inputPath);
-                ArrayList<DataStream<Tuple2<Object, Class>>> dataSources = generateStreams(dataStream);
+                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
                 PETProcessor petProcessor = new PETProcessor("LOCATION") {
                     @Override
                     public void processLogic() {
-                        DataStream<Tuple2<Object, Class>> tuple2DataStream = loadStream(integers);
-                        tuple2DataStream.print();
+                        DataStream<SingleReading<?>> tuple2DataStream = loadStream(selectedNames);
+                        tuple2DataStream.print("result");
+//                        testPrint(selectedNames);
 
                     }
                 };
-                petProcessor.setStreams(dataSources);
+                petProcessor.setStream(stringDataStreamHashMap);
                 petProcessor.processLogic();
 
 

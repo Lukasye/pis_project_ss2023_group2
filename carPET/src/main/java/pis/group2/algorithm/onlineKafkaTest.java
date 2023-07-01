@@ -1,6 +1,7 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 
@@ -13,7 +14,7 @@ public class onlineKafkaTest {
         String path = args[0];
         new PETPipeLine(path) {
             @Override
-            void buildPipeline() {
+            public void buildPipeline() {
                 env.setParallelism(1);
                 initKafkaOnline();
 
