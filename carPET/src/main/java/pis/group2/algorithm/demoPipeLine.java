@@ -3,6 +3,7 @@ package pis.group2.algorithm;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
+import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 
@@ -11,7 +12,7 @@ public class demoPipeLine {
 
         PETPipeLine petPipeLine = new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
             @Override
-            void buildPipeline() {
+            public void buildPipeline() {
                 FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic("test-data",
                 BOOTSTRAPSERVER, GROUPID);
                 DataStreamSource<String> inputStream = env.addSource(sensorDataConsumer);

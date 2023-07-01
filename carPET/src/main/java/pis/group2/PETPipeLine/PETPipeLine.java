@@ -1,4 +1,4 @@
-package pis.group2.algorithm;
+package pis.group2.PETPipeLine;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
@@ -88,7 +88,7 @@ public abstract class PETPipeLine {
     /**
      * Implement the Streaming process with source and sink
      */
-    abstract void buildPipeline();
+    public abstract void buildPipeline();
 
 
     /**

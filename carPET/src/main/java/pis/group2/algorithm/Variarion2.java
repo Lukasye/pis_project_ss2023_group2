@@ -1,13 +1,10 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import pis.group2.Jedis.DataFetcher;
+import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.beams.ImageWrapper;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
-import redis.clients.jedis.Jedis;
-
-import java.nio.channels.Pipe;
 
 public class Variarion2 {
     public static void main(String[] args) throws Exception {
@@ -18,7 +15,7 @@ public class Variarion2 {
         String path = args[0];
         new PETPipeLine(path) {
             @Override
-            void buildPipeline() {
+            public void buildPipeline() {
                 env.setParallelism(1);
                 // Initialize data source
                 initKafka();

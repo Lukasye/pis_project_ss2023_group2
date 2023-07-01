@@ -1,9 +1,8 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.streaming.api.datastream.ConnectedStreams;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
+import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 import scala.Tuple2;
@@ -17,7 +16,7 @@ public class Variation1 {
         String path = args[0];
         new PETPipeLine(path) {
             @Override
-            void buildPipeline() {
+            public void buildPipeline() {
                 env.setParallelism(1);
                 // Read Image from kafka topic
                 initKafka(1000L);

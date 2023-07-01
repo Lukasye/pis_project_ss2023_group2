@@ -1,25 +1,18 @@
 package pis.group2.algorithm;
 
-import org.apache.flink.api.common.serialization.SimpleStringEncoder;
-import org.apache.flink.api.common.serialization.SimpleStringSchema;
-import org.apache.flink.api.java.io.TextOutputFormat;
-import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
-import pis.group2.GUI.SinkGUI;
+import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
-
-import java.util.Properties;
 
 public class testPipeline{
     public static void main(String[] args) throws Exception {
 
         new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
             @Override
-            void buildPipeline() {
+            public void buildPipeline() {
                 env.setParallelism(1);
 
                 // Read Image from kafka topic
