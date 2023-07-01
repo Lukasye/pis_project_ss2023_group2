@@ -41,7 +41,7 @@ public class StreamLoader implements Serializable {
         }
         DataStream<SingleReading<?>> singleReadingDataStream = streamMap.get(names.get(0));
         for (int i = 1; i < names.size(); i++) {
-            singleReadingDataStream.union(streamMap.get(names.get(i)));
+            singleReadingDataStream = singleReadingDataStream.union(streamMap.get(names.get(i)));
         }
         return singleReadingDataStream;
     }

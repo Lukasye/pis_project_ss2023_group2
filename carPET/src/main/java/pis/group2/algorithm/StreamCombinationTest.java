@@ -1,5 +1,6 @@
 package pis.group2.algorithm;
 
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -37,6 +38,10 @@ public class StreamCombinationTest {
                 selectedNames.add("Altitude");
                 selectedNames.add("Speed");
 
+                ArrayList<String> changedNames = new ArrayList<>();
+                changedNames.add("Longitude");
+                changedNames.add("Altitude");
+                changedNames.add("Latitude");
 
                 String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
                 DataStreamSource<String> dataStream = env.readTextFile(inputPath);
@@ -46,7 +51,19 @@ public class StreamCombinationTest {
                     @Override
                     public void processLogic() {
                         DataStream<SingleReading<?>> tuple2DataStream = loadStream(selectedNames);
-                        tuple2DataStream.print("result");
+                        SingleOutputStreamOperator<SingleReading<?>> map = tuple2DataStream.map(new MapFunction<SingleReading<?>, SingleReading<?>>() {
+                            private int Counter = 0;
+
+                            @Override
+                            public SingleReading<?> map(SingleReading<?> singleReading) throws Exception {
+                                Counter++;
+                                if (Counter > 10) {
+                                    loadStream(changedNames);
+                                }
+                                return singleReading;
+                            }
+                        });
+                        map.print("result");
 //                        testPrint(selectedNames);
 
                     }

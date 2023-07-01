@@ -5,10 +5,11 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import pis.group2.PETLoader.StreamLoader;
 import pis.group2.beams.SingleReading;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public abstract class PETProcessor {
+public abstract class PETProcessor implements Serializable {
     private ArrayList<Integer> StreamIndex;
     private final StreamLoader StreamLoader;
     private final String TYPE;
