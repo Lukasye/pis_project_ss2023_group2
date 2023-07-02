@@ -94,7 +94,7 @@ public abstract class PETPipeLine {
     /**
      * Implement the Streaming process with source and sink
      */
-    public abstract void buildPipeline();
+    public abstract void buildPipeline() throws Exception;
 
 
     /**
@@ -157,22 +157,6 @@ public abstract class PETPipeLine {
                 topic, new SimpleStringSchema(), props);
 
         return consumer;
-    }
-
-    public static HashMap<String, DataStream<SingleReading<?>>> SplitStringDataSource(DataStream<String> input, ArrayList<String> NameList){
-        HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = new HashMap<>();
-        for (int i = 0; i < NameList.size(); i++) {
-            int finalI = i;
-            String name = NameList.get(i);
-            stringDataStreamHashMap.put(name, input.map(new MapFunction<String, SingleReading<?>>() {
-                @Override
-                public SingleReading<?> map(String s) throws Exception {
-                    String[] split = s.split(",");
-                    return new SingleReading<>(split[finalI], name) ;
-                }
-            }));
-        }
-        return stringDataStreamHashMap;
     }
 
 }

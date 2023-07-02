@@ -7,6 +7,7 @@
       "FunctionName":"pis.group2.SpeedAnonymizer",
       "ConstructorParameter": [],
       "Default": [],
+      "Component": ["VEL"],
       "FunctionParameter": ["java.lang.Double"]
     },"1": {
       "FileName": "SpeedPET01-1.0-SNAPSHOT.jar",
@@ -17,6 +18,7 @@
         "java.lang.Double",
         "java.lang.Double"],
       "Default": [75.0, 83.0, 10.0, 2.5],
+      "Component": ["VEL"],
       "FunctionParameter": ["java.lang.Double"]
     }
   },
@@ -27,6 +29,7 @@
       "FunctionName":"pis.group2.LocationAnonymizer",
       "ConstructorParameter": [],
       "Default": [],
+      "Component": ["LAT", "LON"],
       "FunctionParameter": ["org.apache.flink.api.java.tuple.Tuple2"]
     },
     "1": {
@@ -37,6 +40,7 @@
         "java.lang.Integer",
         "java.lang.Double"],
       "Default": [3, 15, 10.0],
+      "Component": ["LAT", "LON"],
       "FunctionParameter": ["org.apache.flink.api.java.tuple.Tuple2"]
     }
   },
@@ -47,6 +51,7 @@
       "FunctionName":"pis.group2.ImageAnonymizer",
       "ConstructorParameter": [],
       "Default": [],
+      "Component": ["IMG"],
       "FunctionParameter": ["java.lang.Object"]
     },
     "1": {
@@ -55,6 +60,7 @@
       "FunctionName":"pis.group2.ImageAnonymizer",
       "ConstructorParameter": ["java.lang.String", "java.lang.Integer"],
       "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py", 1],
+      "Component": ["IMG"],
       "FunctionParameter": ["java.lang.Object"]
     },"2": {
       "FileName": "ImagePET01-1.0-SNAPSHOT.jar",
@@ -62,6 +68,7 @@
       "FunctionName":"pis.group2.ImageAnonymizer",
       "ConstructorParameter": ["java.lang.String", "java.lang.Integer"],
       "Default": ["D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\enet\\Main.py", 2],
+      "Component": ["IMG"],
       "FunctionParameter": ["java.lang.Object"]
     }
   }

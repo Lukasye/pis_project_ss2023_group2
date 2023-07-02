@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class StreamLoader implements Serializable {
     private ArrayList<Integer> indexList;
     private HashMap<String, DataStream<SingleReading<?>>> streamMap;
+    private DataStream<String> RawStream;
 
     public StreamLoader() {
     }
@@ -28,6 +29,15 @@ public class StreamLoader implements Serializable {
 
     public HashMap<String, DataStream<SingleReading<?>>> getStreamMap() {
         return streamMap;
+    }
+
+    public DataStream<String> getRawStream() {
+        return RawStream;
+    }
+
+    public void setRawStream(DataStream<String> rawStream, ArrayList<String> name) {
+        RawStream = rawStream;
+        setStreamMap(SplitStringDataSource(rawStream, name));
     }
 
     public void setStreamMap(HashMap<String, DataStream<SingleReading<?>>> streamMap) {
@@ -55,5 +65,21 @@ public class StreamLoader implements Serializable {
         for (String name: names){
             streamMap.get(name).print();
         }
+    }
+
+    public static HashMap<String, DataStream<SingleReading<?>>> SplitStringDataSource(DataStream<String> input, ArrayList<String> NameList){
+        HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = new HashMap<>();
+        for (int i = 0; i < NameList.size(); i++) {
+            int finalI = i;
+            String name = NameList.get(i);
+            stringDataStreamHashMap.put(name, input.map(new MapFunction<String, SingleReading<?>>() {
+                @Override
+                public SingleReading<?> map(String s) throws Exception {
+                    String[] split = s.split(",");
+                    return new SingleReading<>(split[finalI], name) ;
+                }
+            }));
+        }
+        return stringDataStreamHashMap;
     }
 }

@@ -12,7 +12,8 @@ import pis.group2.beams.SingleReading;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+
+import static pis.group2.PETLoader.StreamLoader.SplitStringDataSource;
 
 
 public class StreamCombinationTest {
@@ -24,60 +25,68 @@ public class StreamCombinationTest {
         String path = args[0];
         new PETPipeLine(path) {
             @Override
-            public void buildPipeline() {
+            public void buildPipeline() throws Exception {
                 env.setParallelism(1);
 
                 ArrayList<String> names = new ArrayList<>();
-                names.add("Longitude");
-                names.add("Latitude");
-                names.add("Altitude");
-                names.add("Speed");
-
-                ArrayList<String> selectedNames = new ArrayList<>();
-                selectedNames.add("Longitude");
-                selectedNames.add("Altitude");
-                selectedNames.add("Speed");
-
-                ArrayList<String> changedNames = new ArrayList<>();
-                changedNames.add("Longitude");
-                changedNames.add("Altitude");
-                changedNames.add("Latitude");
+                names.add("LON");
+                names.add("LAT");
+                names.add("ALT");
+                names.add("VEL");
 
                 String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
                 DataStreamSource<String> dataStream = env.readTextFile(inputPath);
-                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
+//                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
-                PETProcessor petProcessor = new PETProcessor("LOCATION") {
+                PETProcessor petProcessor = new PETProcessor(this.PETconfpath, "LOCATION") {
+
                     @Override
-                    public void processLogic() {
-                        DataStream<SingleReading<?>> tuple2DataStream = loadStream(selectedNames);
-                        SingleOutputStreamOperator<SingleReading<?>> map = tuple2DataStream.map(new MapFunction<SingleReading<?>, SingleReading<?>>() {
-                            private int Counter = 0;
-
+                    public DataStream<Tuple2<Integer, ArrayList<Integer>>> evaluation() {
+                        return this.StreamLoader.getRawStream().map(new MapFunction<String, Tuple2<Integer, ArrayList<Integer>>>() {
+                            private int counter = 0;
                             @Override
-                            public SingleReading<?> map(SingleReading<?> singleReading) throws Exception {
-                                Counter++;
-                                if (Counter > 10) {
-                                    loadStream(changedNames);
+                            public Tuple2<Integer, ArrayList<Integer>> map(String s) throws Exception {
+                                counter ++;
+                                if (counter < 4){
+                                    return new Tuple2<>(0, new ArrayList<>(Arrays.asList(0, 2, 3)));
+                                }else {
+                                    return new Tuple2<>(1, new ArrayList<>(Arrays.asList(0, 1, 3)));
                                 }
-                                return singleReading;
                             }
                         });
-                        map.print("result");
-//                        testPrint(selectedNames);
+                    }
+
+                    @Override
+                    public void applyPET() {
 
                     }
                 };
-                petProcessor.setStream(stringDataStreamHashMap);
-                petProcessor.processLogic();
-
-
-                // Try to combine them
-//                DataStream<Tuple2<Object, Class>> stringDataStream = mergeStream(dataSources, integers);
-//                DataStream<String> stringDataStream = mergeStream(dataSources, integers);
-
-//                stringDataStream.print("Union");
+                petProcessor.run(dataStream, names);
             }
         };
+    }
+
+    public static class MyMapFunction implements MapFunction<SingleReading<?>, SingleReading<?>> {
+        private int counter = 0;
+        private final transient PETProcessor processor;
+        private final ArrayList<String> changedNames;
+
+        public MyMapFunction(PETProcessor petProcessor) {
+            this.processor = petProcessor;
+            changedNames = new ArrayList<>();
+                changedNames.add("LON");
+            changedNames.add("Alt");
+            changedNames.add("LAT");
+        }
+
+        @Override
+        public SingleReading<?> map(SingleReading<?> singleReading) throws Exception {
+            System.out.println(processor);
+            counter++;
+            if (counter > 10) {
+                processor.loadStream(changedNames);
+            }
+            return singleReading;
+        }
     }
 }

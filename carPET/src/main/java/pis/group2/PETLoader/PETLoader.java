@@ -36,6 +36,7 @@ public class PETLoader<T> implements Serializable{
     private Method process;
     private Class PetClass;
     private SerializableMethod<T> PETMethod;
+    private ArrayList<String> components;
 
     /**
      * @param confPath: The path of the file "petconfig.json"
@@ -131,6 +132,7 @@ public class PETLoader<T> implements Serializable{
         ClassList = parseClassString((ArrayList<String>) typeMethode.get("ConstructorParameter"));
         FunctionParameter = parseClassString((ArrayList<String>) typeMethode.get("FunctionParameter"));
         Default = (ArrayList<Object>) typeMethode.get("Default");
+        components = (ArrayList<String>) typeMethode.get("Component");
     }
 
     public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
