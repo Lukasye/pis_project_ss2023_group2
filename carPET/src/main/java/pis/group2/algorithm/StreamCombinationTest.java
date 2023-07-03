@@ -2,18 +2,16 @@ package pis.group2.algorithm;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
 import pis.group2.beams.SingleReading;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-
-import static pis.group2.PETLoader.StreamLoader.SplitStringDataSource;
+import java.util.List;
 
 
 public class StreamCombinationTest {
@@ -28,40 +26,25 @@ public class StreamCombinationTest {
             public void buildPipeline() throws Exception {
                 env.setParallelism(1);
 
-                ArrayList<String> names = new ArrayList<>();
-                names.add("LON");
-                names.add("LAT");
-                names.add("ALT");
-                names.add("VEL");
-
-                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
+                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
                 DataStreamSource<String> dataStream = env.readTextFile(inputPath);
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
-                PETProcessor petProcessor = new PETProcessor(this.PETconfpath, "LOCATION") {
-
+                PETProcessor petProcessor = new PETProcessor(this.PETconfpath, "SPEED") {
                     @Override
-                    public DataStream<Tuple2<Integer, ArrayList<Integer>>> evaluation() {
-                        return this.StreamLoader.getRawStream().map(new MapFunction<String, Tuple2<Integer, ArrayList<Integer>>>() {
+                    public DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation() {
+                        return StreamLoader.getRawStream().map(new MapFunction<String, Tuple3<Integer, ArrayList<Integer>, String>>() {
                             private int counter = 0;
                             @Override
-                            public Tuple2<Integer, ArrayList<Integer>> map(String s) throws Exception {
+                            public Tuple3<Integer, ArrayList<Integer>, String> map(String s) throws Exception {
                                 counter ++;
-                                if (counter < 4){
-                                    return new Tuple2<>(0, new ArrayList<>(Arrays.asList(0, 2, 3)));
-                                }else {
-                                    return new Tuple2<>(1, new ArrayList<>(Arrays.asList(0, 1, 3)));
-                                }
+                                ArrayList<Integer> list = new ArrayList<>(Arrays.asList(0, counter > 5 ? 2 : 1));
+                                return new Tuple3<>(counter > 5 ? 2 : 0, list, s);
                             }
                         });
                     }
-
-                    @Override
-                    public void applyPET() {
-
-                    }
                 };
-                petProcessor.run(dataStream, names);
+                petProcessor.run(dataStream);
             }
         };
     }

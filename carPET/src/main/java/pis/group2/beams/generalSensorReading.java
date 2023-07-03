@@ -5,14 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class generalSensorReading implements Serializable {
-    private HashMap<Integer, Double> data;
+    private final HashMap<Integer, Double> data;
     private Integer Policy;
 
     public generalSensorReading() {
-
+        data = new HashMap<>();
     }
 
     public void addData(Integer key, Double value){
+        if (value == null || key == null) {System.out.println("Null value can't be accepted as addData parameter!"); return;}
         data.put(key, value);
     }
 

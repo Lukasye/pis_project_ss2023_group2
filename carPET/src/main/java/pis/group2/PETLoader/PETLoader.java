@@ -135,6 +135,14 @@ public class PETLoader<T> implements Serializable{
         components = (ArrayList<String>) typeMethode.get("Component");
     }
 
+    public ArrayList<Integer> getComponents(){
+        ArrayList<Integer> integers = new ArrayList<>();
+        for (String s: this.components){
+            integers.add(Integer.valueOf(s));
+        }
+        return integers;
+    }
+
     public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         int length = InputList.size();
         Class[] TmpList = new Class[length];

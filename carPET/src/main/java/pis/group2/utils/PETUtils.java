@@ -22,10 +22,7 @@ import pis.group2.GUI.SinkGUI;
 import pis.group2.Jedis.DataFetcher;
 import pis.group2.Jedis.JedisTest;
 import pis.group2.PETLoader.PETLoader;
-import pis.group2.beams.ImageWrapper;
-import pis.group2.beams.JedisWrapper;
-import pis.group2.beams.SensorReading;
-import pis.group2.beams.dataWrapper;
+import pis.group2.beams.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisFactory;
 import redis.clients.jedis.JedisPool;
@@ -36,6 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 public class PETUtils implements Serializable {
 
@@ -445,6 +443,79 @@ public class PETUtils implements Serializable {
             return sensorReading;
         }
     }
+
+
+    /**
+     * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
+     * same type of data.
+     * @param <T> input data type
+     */
+    public static class applyPETForGeneralSensorReading<T> extends RichMapFunction<generalSensorReading, generalSensorReading> {
+        private PETLoader<T> PETLoader;
+        private Integer id;
+        private String confPath;
+        private String Type;
+
+        /**
+         * Constructor method
+         * @param confPath: The configuration file, normally will be given in the conf file.
+         * @param Type: The PET data type ("IMAGE", "LOCATION", "SPEED")
+         */
+        public applyPETForGeneralSensorReading(String confPath, String Type) {
+            this.confPath = confPath;
+            this.Type = Type;
+            this.id = 0;
+        }
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            // Load and initialise the PET method
+            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.initialize();
+        }
+
+
+        public void reloadPET() throws Exception {
+//            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader.reloadPET(id);
+            PETLoader.instantiate();
+        }
+
+        /**
+         * Depends on the PET TYPE, process the data with the PETLoader
+         * @param sensorReading: input from the stream
+         * @return: output of the modified stream
+         * @throws Exception
+         */
+        @Override
+        public generalSensorReading map(generalSensorReading sensorReading) throws Exception {
+//            String type = PET.getType();
+            if (!Objects.equals(id, sensorReading.getPolicy())) {
+                id = sensorReading.getPolicy();
+                System.out.println("ApplyPET: ReloadPET......");
+                reloadPET();
+            }
+            switch (Type) {
+                case "SPEED":
+                    Double invoke_speed = (Double) PETLoader.invoke((T) sensorReading.getVel()).get(0);
+                    sensorReading.setVel(invoke_speed);
+                    break;
+                case "LOCATION":
+                    ArrayList<Tuple2<Double, Double>> invoke_pos = (ArrayList<Tuple2<Double, Double>>) PETLoader.invoke((T) sensorReading.getPosition());
+                    sensorReading.setLocation(invoke_pos);
+                    break;
+                case "IMAGE":
+                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
+                    sensorReading.setImage(invoke_img);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + Type);
+            }
+            return sensorReading;
+        }
+    }
+
 
     /**
      * Evaluation methode for Variation 1, Accept the SensorReading stream and the User Input stream, use coflatmap

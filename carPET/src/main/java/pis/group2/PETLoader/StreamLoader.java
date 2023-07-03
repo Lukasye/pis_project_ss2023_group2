@@ -35,9 +35,9 @@ public class StreamLoader implements Serializable {
         return RawStream;
     }
 
-    public void setRawStream(DataStream<String> rawStream, ArrayList<String> name) {
+    public void setRawStream(DataStream<String> rawStream) {
         RawStream = rawStream;
-        setStreamMap(SplitStringDataSource(rawStream, name));
+//        setStreamMap(SplitStringDataSource(rawStream, name));
     }
 
     public void setStreamMap(HashMap<String, DataStream<SingleReading<?>>> streamMap) {
