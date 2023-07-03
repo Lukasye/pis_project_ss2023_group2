@@ -7,6 +7,7 @@ import java.util.HashMap;
 public class generalSensorReading implements Serializable {
     private final HashMap<Integer, Double> data;
     private Integer Policy;
+    private Object result;
 
     public generalSensorReading() {
         data = new HashMap<>();
@@ -16,6 +17,10 @@ public class generalSensorReading implements Serializable {
         if (value == null || key == null) {System.out.println("Null value can't be accepted as addData parameter!"); return;}
         data.put(key, value);
     }
+
+//    public void setData(Integer key, Double value){
+//        data.put()
+//    }
 
     public Double getData(Integer key){
         return data.get(key);
@@ -29,11 +34,20 @@ public class generalSensorReading implements Serializable {
         Policy = policy;
     }
 
+    public Object getResult() {
+        return result;
+    }
+
+    public void setResult(Object result) {
+        this.result = result;
+    }
+
     @Override
     public String toString() {
         return "generalSensorReading{" +
                 "data=" + data +
                 ", Policy=" + Policy +
+                ", result=" + result +
                 '}';
     }
 }

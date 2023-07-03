@@ -7,6 +7,7 @@ import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
+import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -455,6 +456,7 @@ public class PETUtils implements Serializable {
         private Integer id;
         private String confPath;
         private String Type;
+        private ArrayList<Integer> components;
 
         /**
          * Constructor method
@@ -473,6 +475,8 @@ public class PETUtils implements Serializable {
             // Load and initialise the PET method
             PETLoader = new  PETLoader<T>(confPath, Type, id);
             PETLoader.initialize();
+            PETLoader.instantiate();
+            components = PETLoader.getComponents();
         }
 
 
@@ -480,6 +484,7 @@ public class PETUtils implements Serializable {
 //            PETLoader = new  PETLoader<T>(confPath, Type, id);
             PETLoader.reloadPET(id);
             PETLoader.instantiate();
+            components = PETLoader.getComponents();
         }
 
         /**
@@ -498,16 +503,22 @@ public class PETUtils implements Serializable {
             }
             switch (Type) {
                 case "SPEED":
-                    Double invoke_speed = (Double) PETLoader.invoke((T) sensorReading.getVel()).get(0);
-                    sensorReading.setVel(invoke_speed);
+                    Integer integer = components.get(0);
+                    Double invoke_speed = (Double) PETLoader.invoke((T) sensorReading.getData(integer)).get(0);
+//                    sensorReading.addData(-1, invoke_speed);
+//                    System.out.println(components);
+                    sensorReading.setResult(invoke_speed);
                     break;
                 case "LOCATION":
-                    ArrayList<Tuple2<Double, Double>> invoke_pos = (ArrayList<Tuple2<Double, Double>>) PETLoader.invoke((T) sensorReading.getPosition());
-                    sensorReading.setLocation(invoke_pos);
+                    Double d1 = sensorReading.getData(components.get(0));
+                    Double d2 = sensorReading.getData(components.get(1));
+                    Tuple2<Double, Double> doubleDoubleTuple2 = new Tuple2<>(d1, d2);
+                    ArrayList<Tuple2<Double, Double>> invoke_pos = (ArrayList<Tuple2<Double, Double>>) PETLoader.invoke((T) doubleDoubleTuple2);
+                    sensorReading.setResult(invoke_pos);
                     break;
                 case "IMAGE":
-                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
-                    sensorReading.setImage(invoke_img);
+//                    byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
+//                    sensorReading.setImage(invoke_img);
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + Type);

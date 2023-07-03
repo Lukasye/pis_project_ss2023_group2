@@ -3,6 +3,7 @@ package pis.group2.PETLoader;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonAlias;
 import org.apache.flink.streaming.api.transformations.SideOutputTransformation;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import pis.group2.beams.SerializableMethod;
@@ -36,7 +37,7 @@ public class PETLoader<T> implements Serializable{
     private Method process;
     private Class PetClass;
     private SerializableMethod<T> PETMethod;
-    private ArrayList<String> components;
+    private ArrayList<Integer> components;
 
     /**
      * @param confPath: The path of the file "petconfig.json"
@@ -132,15 +133,20 @@ public class PETLoader<T> implements Serializable{
         ClassList = parseClassString((ArrayList<String>) typeMethode.get("ConstructorParameter"));
         FunctionParameter = parseClassString((ArrayList<String>) typeMethode.get("FunctionParameter"));
         Default = (ArrayList<Object>) typeMethode.get("Default");
-        components = (ArrayList<String>) typeMethode.get("Component");
+        JSONArray component = (JSONArray) typeMethode.get("Component");
+        components = new ArrayList<>();
+        for (int i = 0; i < component.size(); i++) {
+            Integer element = ((Long) component.get(i)).intValue();
+            components.add(element);
+        }
     }
 
     public ArrayList<Integer> getComponents(){
-        ArrayList<Integer> integers = new ArrayList<>();
-        for (String s: this.components){
-            integers.add(Integer.valueOf(s));
-        }
-        return integers;
+//        ArrayList<Integer> integers = new ArrayList<>();
+//        for (String s: this.components){
+//            integers.add(Integer.valueOf(s));
+//        }
+        return this.components;
     }
 
     public static Class[] parseClassString(ArrayList<String> InputList) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {

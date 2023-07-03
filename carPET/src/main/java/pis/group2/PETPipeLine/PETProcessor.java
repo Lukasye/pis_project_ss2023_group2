@@ -28,14 +28,14 @@ import java.util.*;
 public abstract class PETProcessor implements Serializable {
     private ArrayList<Integer> StreamIndex;
     protected final StreamLoader StreamLoader;
-    private final PETLoader<?> PETLoader;
+//    private final PETLoader<?> PETLoader;
     private final String PETConfPath;
     private final String TYPE;
 
     public PETProcessor(String confPath, String TYPE) throws Exception {
         StreamLoader = new StreamLoader();
         this.TYPE = TYPE;
-        this.PETLoader = new PETLoader<>(confPath, TYPE, 0);
+//        this.PETLoader = new PETLoader<>(confPath, TYPE, 0);
         this.PETConfPath = confPath;
     }
 
@@ -86,6 +86,7 @@ public abstract class PETProcessor implements Serializable {
         });
 //        filteredDataSource.print();
         SingleOutputStreamOperator<generalSensorReading> resultStream = filteredDataSource.map(new PETUtils.applyPETForGeneralSensorReading<>(PETConfPath, TYPE));
+        resultStream.print(this.TYPE);
     }
 
     public abstract DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation();
