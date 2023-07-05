@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 
+import static pis.group2.utils.PETUtils.DataWrapperToCSV.createSensorReadingFromRawInput;
+
 public class PETUtils implements Serializable {
 
 
@@ -43,7 +45,7 @@ public class PETUtils implements Serializable {
      * Determine the way flink accept kafka data as image byte array.
      */
     // Kafka deserializer function
-    public static class ReadByteAsStream extends AbstractDeserializationSchema<byte[]>{
+    public static class ReadByteAsStream extends AbstractDeserializationSchema<byte[]> {
 
         @Override
         public byte[] deserialize(byte[] bytes) throws IOException {
@@ -56,7 +58,7 @@ public class PETUtils implements Serializable {
     /**
      * Map a gps raw stream direct into a SensorReading POJO without Image.
      */
-    public static class toSensorReading implements MapFunction<String, SensorReading>{
+    public static class toSensorReading implements MapFunction<String, SensorReading> {
 
         @Override
         public SensorReading map(String s) throws Exception {
@@ -74,7 +76,7 @@ public class PETUtils implements Serializable {
     /**
      * Map a byte array into a ImageWrapper POJO without gps. used in Variation two.
      */
-    public static class toImageWrapper implements MapFunction<byte[], ImageWrapper>{
+    public static class toImageWrapper implements MapFunction<byte[], ImageWrapper> {
 
         @Override
         public ImageWrapper map(byte[] bytes) throws Exception {
@@ -82,7 +84,7 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class addImageToReading implements MapFunction<byte[], SensorReading>{
+    public static class addImageToReading implements MapFunction<byte[], SensorReading> {
 
         @Override
         public SensorReading map(byte[] bytes) throws Exception {
@@ -136,7 +138,7 @@ public class PETUtils implements Serializable {
         public void processElement1(byte[] bytes, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
             latestImage.update(bytes);
             String value = latestData.value();
-            if (value != null){
+            if (value != null) {
                 collector.collect(createSensorReadingFromRawInput(value, bytes));
             }
         }
@@ -145,14 +147,14 @@ public class PETUtils implements Serializable {
         public void processElement2(String s, KeyedCoProcessFunction<String, byte[], String, SensorReading>.Context context, Collector<SensorReading> collector) throws Exception {
             latestData.update(s);
             byte[] img = latestImage.value();
-            if (img != null){
+            if (img != null) {
                 collector.collect(createSensorReadingFromRawInput(s, img));
             }
 
         }
     }
 
-    public static class evaluationData implements MapFunction<SensorReading, SensorReading>{
+    public static class evaluationData implements MapFunction<SensorReading, SensorReading> {
 
         private int count = 0;
         private final Tuple2<Double, Double> UserHome = new Tuple2<>(48.98561, 8.39571);
@@ -160,14 +162,14 @@ public class PETUtils implements Serializable {
 
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
-            count ++;
+            count++;
             // Location strategy, determine whether the car is near at home
             Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
-            int locationPET = (distance < thredhold)? 1 : 0;
+            int locationPET = (distance < thredhold) ? 1 : 0;
             sensorReading.setPETPolicy("LOCATION", locationPET);
 
             // Dummy speed evaluation
-            if (count > 50){
+            if (count > 50) {
                 sensorReading.setPETPolicy("SPEED", 1);
             }
 
@@ -184,7 +186,7 @@ public class PETUtils implements Serializable {
      * connect stream. The message might be duplicated. Use the Timestamp to determine whether this is the actual
      * information.
      */
-    public static class duplicateCheck implements FilterFunction<SensorReading>{
+    public static class duplicateCheck implements FilterFunction<SensorReading> {
         private Double currentTimeStamp = 0.0;
 
         @Override
@@ -200,9 +202,9 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class retrieveDataPolicy extends RichMapFunction<SensorReading, SensorReading>{
+    public static class retrieveDataPolicy extends RichMapFunction<SensorReading, SensorReading> {
         private final Tuple3<String, String, String> RedisConfig;
-//        private transient JedisPool jedisPool;
+        //        private transient JedisPool jedisPool;
         private transient Jedis jedis;
         private Integer UserSpeedPolicy;
         private Integer UserLocationPolicy;
@@ -216,12 +218,12 @@ public class PETUtils implements Serializable {
             this.RedisConfig = dataFetcher;
         }
 
-        public void getPolicy(){
+        public void getPolicy() {
 //            try (Jedis jedis = this.jedisPool.getResource()) {
-                UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
-                UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
-                UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
-                SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
+            UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
+            UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
+            UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
+            SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
 //            }
         }
 
@@ -241,24 +243,24 @@ public class PETUtils implements Serializable {
 
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
-                sensorReading.recordTimer();
+            sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
-                // check the dirty bit, if the data is already modified, update the policy
-                if (Integer.parseInt(jedis.get("dirty")) == 1){
-                    this.getPolicy();
-                    jedis.set("dirty", "0");
-                }
-                Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
-                int locationPET = (distance < thredhold)? 1 : 0;
-                sensorReading.setPETPolicy("LOCATION", locationPET);
-                sensorReading.setPETPolicy("SPEED", SpeedSituation == 1? UserSpeedPolicy: 0);
-                sensorReading.setPETPolicy("IMAGE", 0);
-                return sensorReading;
+            // check the dirty bit, if the data is already modified, update the policy
+            if (Integer.parseInt(jedis.get("dirty")) == 1) {
+                this.getPolicy();
+                jedis.set("dirty", "0");
+            }
+            Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
+            int locationPET = (distance < thredhold) ? 1 : 0;
+            sensorReading.setPETPolicy("LOCATION", locationPET);
+            sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
+            sensorReading.setPETPolicy("IMAGE", 0);
+            return sensorReading;
 //            }
         }
     }
 
-    public static class retrieveImagePolicy extends RichMapFunction<ImageWrapper, ImageWrapper>{
+    public static class retrieveImagePolicy extends RichMapFunction<ImageWrapper, ImageWrapper> {
         private final Tuple3<String, String, String> RedisConfig;
         //        private transient JedisPool jedisPool;
         private transient Jedis jedis;
@@ -273,7 +275,7 @@ public class PETUtils implements Serializable {
             this.RedisConfig = dataFetcher;
         }
 
-        public void getPolicy(){
+        public void getPolicy() {
 //            try (Jedis jedis = this.jedisPool.getResource()) {
             UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
             UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
@@ -302,13 +304,13 @@ public class PETUtils implements Serializable {
             sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
             // check the dirty bit, if the data is already modified, update the policy
-            if (Integer.parseInt(jedis.get("dirty")) == 1){
+            if (Integer.parseInt(jedis.get("dirty")) == 1) {
                 this.getPolicy();
                 jedis.set("dirty", "0");
             }
             sensorReading.setPETPolicy("LOCATION", 0);
-            sensorReading.setPETPolicy("SPEED", SpeedSituation == 1? UserSpeedPolicy: 0);
-            sensorReading.setPETPolicy("IMAGE", CameraSituation == 1? UserCameraPolicy: 0);
+            sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
+            sensorReading.setPETPolicy("IMAGE", CameraSituation == 1 ? UserCameraPolicy : 0);
             return sensorReading;
 //            }
         }
@@ -317,16 +319,18 @@ public class PETUtils implements Serializable {
     /**
      * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
      * same type of data.
+     *
      * @param <T> input data type
      */
     public static class applyPETForImage<T> extends RichMapFunction<ImageWrapper, ImageWrapper> {
         private PETLoader<T> PETLoader;
         private Integer id;
         private String confPath;
-        private final String Type="IMAGE";
+        private final String Type = "IMAGE";
 
         /**
          * Constructor method
+         *
          * @param confPath: The configuration file, normally will be given in the conf file.
          */
         public applyPETForImage(String confPath) {
@@ -338,7 +342,7 @@ public class PETUtils implements Serializable {
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
             // Load and initialise the PET method
-            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader = new PETLoader<T>(confPath, Type, id);
             PETLoader.initialize();
 //            ClassLoader userCodeClassLoader = getRuntimeContext().getUserCodeClassLoader();
 ////            userCodeClassLoader.loadClass()
@@ -353,6 +357,7 @@ public class PETUtils implements Serializable {
 
         /**
          * Depends on the PET TYPE, process the data with the PETLoader
+         *
          * @param sensorReading: input from the stream
          * @return: output of the modified stream
          */
@@ -374,6 +379,7 @@ public class PETUtils implements Serializable {
     /**
      * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
      * same type of data.
+     *
      * @param <T> input data type
      */
     public static class applyPET<T> extends RichMapFunction<SensorReading, SensorReading> {
@@ -384,8 +390,9 @@ public class PETUtils implements Serializable {
 
         /**
          * Constructor method
+         *
          * @param confPath: The configuration file, normally will be given in the conf file.
-         * @param Type: The PET data type ("IMAGE", "LOCATION", "SPEED")
+         * @param Type:     The PET data type ("IMAGE", "LOCATION", "SPEED")
          */
         public applyPET(String confPath, String Type) {
             this.confPath = confPath;
@@ -397,7 +404,7 @@ public class PETUtils implements Serializable {
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
             // Load and initialise the PET method
-            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader = new PETLoader<T>(confPath, Type, id);
             PETLoader.initialize();
 //            ClassLoader userCodeClassLoader = getRuntimeContext().getUserCodeClassLoader();
 ////            userCodeClassLoader.loadClass()
@@ -412,9 +419,10 @@ public class PETUtils implements Serializable {
 
         /**
          * Depends on the PET TYPE, process the data with the PETLoader
+         *
          * @param sensorReading: input from the stream
-         * @return: output of the modified stream
          * @throws Exception
+         * @return: output of the modified stream
          */
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
@@ -449,6 +457,7 @@ public class PETUtils implements Serializable {
     /**
      * Mapfunction for PET method processing, direct operate on datatype SensorReading and return the
      * same type of data.
+     *
      * @param <T> input data type
      */
     public static class applyPETForGeneralSensorReading<T> extends RichMapFunction<generalSensorReading, generalSensorReading> {
@@ -460,8 +469,9 @@ public class PETUtils implements Serializable {
 
         /**
          * Constructor method
+         *
          * @param confPath: The configuration file, normally will be given in the conf file.
-         * @param Type: The PET data type ("IMAGE", "LOCATION", "SPEED")
+         * @param Type:     The PET data type ("IMAGE", "LOCATION", "SPEED")
          */
         public applyPETForGeneralSensorReading(String confPath, String Type) {
             this.confPath = confPath;
@@ -473,7 +483,7 @@ public class PETUtils implements Serializable {
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
             // Load and initialise the PET method
-            PETLoader = new  PETLoader<T>(confPath, Type, id);
+            PETLoader = new PETLoader<T>(confPath, Type, id);
             PETLoader.initialize();
             PETLoader.instantiate();
             components = PETLoader.getComponents();
@@ -489,9 +499,10 @@ public class PETUtils implements Serializable {
 
         /**
          * Depends on the PET TYPE, process the data with the PETLoader
+         *
          * @param sensorReading: input from the stream
-         * @return: output of the modified stream
          * @throws Exception
+         * @return: output of the modified stream
          */
         @Override
         public generalSensorReading map(generalSensorReading sensorReading) throws Exception {
@@ -532,7 +543,7 @@ public class PETUtils implements Serializable {
      * Evaluation methode for Variation 1, Accept the SensorReading stream and the User Input stream, use coflatmap
      * to determine whether the situation is changed or not.
      */
-    public static class evaluateSensorReading implements CoFlatMapFunction<SensorReading, String, SensorReading>{
+    public static class evaluateSensorReading implements CoFlatMapFunction<SensorReading, String, SensorReading> {
         private Integer UserSpeedPolicy = 0;
         private Integer UserLocationPolicy = 0;
         private Integer UserCameraPolicy = 0;
@@ -554,7 +565,7 @@ public class PETUtils implements Serializable {
         @Override
         public void flatMap2(String s, Collector<SensorReading> collector) throws Exception {
             System.out.println("Current policy: \nLocation: " + UserLocationPolicy + " Camera: " + UserCameraPolicy + " Speed: " + UserSpeedPolicy);
-            if (s.startsWith("change")){
+            if (s.startsWith("change")) {
                 // change the user-specified PET policy
                 String[] fields = s.split(",");
                 UserLocationPolicy = Integer.valueOf(fields[1]);
@@ -563,7 +574,7 @@ public class PETUtils implements Serializable {
                 System.out.println("Change policy setting!");
             } else if (s.startsWith("situation")) {
                 String[] fields = s.split(",");
-                switch (fields[1]){
+                switch (fields[1]) {
                     case "speed":
                         SpeedSituation = !SpeedSituation;
                         System.out.println("Switch Speed environment!" + SpeedSituation);
@@ -575,7 +586,7 @@ public class PETUtils implements Serializable {
                     default:
                         System.out.println("Not Valid 'situation' input!");
                 }
-            }else {
+            } else {
                 System.out.println("Not valid 'user config input!");
             }
         }
@@ -618,7 +629,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public SensorReading map2(String s) throws Exception {
-            if (s.startsWith("change")){
+            if (s.startsWith("change")) {
                 // change the user-specified PET policy
                 String[] fields = s.split(",");
                 UserLocationPolicy.update(Integer.valueOf(fields[1]));
@@ -627,7 +638,7 @@ public class PETUtils implements Serializable {
                 System.out.println("Change policy setting!");
             } else if (s.startsWith("situation")) {
                 String[] fields = s.split(",");
-                switch (fields[1]){
+                switch (fields[1]) {
                     case "speed":
                         SpeedSituation.update(!SpeedSituation.value());
                         System.out.println("Switch Speed environment!");
@@ -638,14 +649,14 @@ public class PETUtils implements Serializable {
                     default:
                         System.out.println("Not Valid 'situation' input!");
                 }
-            }else {
+            } else {
                 System.out.println("Not valid 'user config input!");
             }
             return null;
         }
     }
 
-    public static class dataEvaluationRedis extends RichMapFunction<SensorReading, SensorReading>{
+    public static class dataEvaluationRedis extends RichMapFunction<SensorReading, SensorReading> {
         private final Tuple3<String, String, String> RedisConfig;
         private transient Jedis jedis;
 //        private transient JedisPool jedisPool;
@@ -655,6 +666,7 @@ public class PETUtils implements Serializable {
             super();
             this.RedisConfig = dataFetcher;
         }
+
         @Override
         public void open(Configuration parameters) throws Exception {
             super.open(parameters);
@@ -674,8 +686,9 @@ public class PETUtils implements Serializable {
             return null;
         }
     }
+
     // Sink Functions
-    public static class sendDataToGUI implements SinkFunction<SensorReading>{
+    public static class sendDataToGUI implements SinkFunction<SensorReading> {
         private final SinkGUI GUI;
 
         public sendDataToGUI(SinkGUI GUI) {
@@ -692,12 +705,12 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class saveDataAsImage<T extends dataWrapper> implements SinkFunction<T>{
+    public static class saveDataAsImage<T extends dataWrapper> implements SinkFunction<T> {
         private final String OutputPath;
         private final String DataType;
         private Integer counter = 0;
 
-        public saveDataAsImage(String path, String Datatype){
+        public saveDataAsImage(String path, String Datatype) {
             this.DataType = Datatype;
             this.OutputPath = path;
         }
@@ -715,7 +728,7 @@ public class PETUtils implements Serializable {
             try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
                 System.out.println(bais);
                 BufferedImage image = ImageIO.read(bais);
-                counter ++;
+                counter++;
                 String filePath = OutputPath + counter + "." + DataType;
                 System.out.println(filePath);
 
@@ -727,15 +740,16 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class showInGUI implements SinkFunction<SensorReading>{
+    public static class showInGUI implements SinkFunction<SensorReading> {
         private final SinkGUI GUI;
 
-        public showInGUI(SinkGUI gui){
+        public showInGUI(SinkGUI gui) {
             this.GUI = gui;
         }
+
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
-            SwingUtilities.invokeAndWait(()->{
+            SwingUtilities.invokeAndWait(() -> {
                 this.GUI.addImageFromByteArray(value.getImage());
                 this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
                 this.GUI.addLocationInfo(String.valueOf(value.getPosition()));
@@ -748,10 +762,10 @@ public class PETUtils implements Serializable {
     /**
      * Save the gps data information from SensorReading object with the name of the timestamp
      */
-    public static class saveDataAsText implements SinkFunction<SensorReading>{
+    public static class saveDataAsText implements SinkFunction<SensorReading> {
         private final String OutputPath;
 
-        public saveDataAsText(String path){
+        public saveDataAsText(String path) {
             this.OutputPath = path;
         }
 
@@ -769,7 +783,7 @@ public class PETUtils implements Serializable {
      */
     public static class changeUserPolicyInRedis extends RichSinkFunction<String> {
         private final Tuple3<String, String, String> RedisConfig;
-//        private transient JedisPool jedisPool;
+        //        private transient JedisPool jedisPool;
         private transient Jedis jedis;
         private Integer UserSpeedPolicy;
         private Integer UserLocationPolicy;
@@ -782,24 +796,24 @@ public class PETUtils implements Serializable {
             this.RedisConfig = dataFetcher;
         }
 
-        public void getPolicy(){
+        public void getPolicy() {
 //            try (Jedis jedis = this.jedisPool.getResource()) {
-                UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
-                UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
-                UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
-                SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
-                CameraSituation = Integer.valueOf(jedis.get("CameraSituation"));
+            UserSpeedPolicy = Integer.valueOf(jedis.get("SpeedPET"));
+            UserLocationPolicy = Integer.valueOf(jedis.get("LocationPET"));
+            UserCameraPolicy = Integer.valueOf(jedis.get("CameraPET"));
+            SpeedSituation = Integer.valueOf(jedis.get("SpeedSituation"));
+            CameraSituation = Integer.valueOf(jedis.get("CameraSituation"));
 //            }
         }
 
-        public void setPolicy(){
+        public void setPolicy() {
 //            try (Jedis jedis = this.jedisPool.getResource()) {
-                jedis.set("SpeedPet", String.valueOf(UserSpeedPolicy));
-                jedis.set("LocationPET", String.valueOf(UserLocationPolicy));
-                jedis.set("CameraPET", String.valueOf(UserCameraPolicy));
-                jedis.set("SpeedSituation", String.valueOf(SpeedSituation));
-                jedis.set("CameraSituation", String.valueOf(CameraSituation));
-                jedis.set("dirty", "1");
+            jedis.set("SpeedPet", String.valueOf(UserSpeedPolicy));
+            jedis.set("LocationPET", String.valueOf(UserLocationPolicy));
+            jedis.set("CameraPET", String.valueOf(UserCameraPolicy));
+            jedis.set("SpeedSituation", String.valueOf(SpeedSituation));
+            jedis.set("CameraSituation", String.valueOf(CameraSituation));
+            jedis.set("dirty", "1");
 //            }
         }
 
@@ -821,7 +835,7 @@ public class PETUtils implements Serializable {
         @Override
         public void invoke(String value, Context context) throws Exception {
             super.invoke(value, context);
-            if (value.startsWith("change")){
+            if (value.startsWith("change")) {
                 // change the user-specified PET policy
                 String[] fields = value.split(",");
                 UserLocationPolicy = Integer.valueOf(fields[1]);
@@ -834,20 +848,19 @@ public class PETUtils implements Serializable {
                 String[] fields = value.split(",");
                 switch (fields[1]) {
                     case "speed":
-                        SpeedSituation = SpeedSituation == 1? 0: 1;
+                        SpeedSituation = SpeedSituation == 1 ? 0 : 1;
                         this.setPolicy();
                         System.out.println("Switch Speed environment!" + SpeedSituation);
                         break;
                     case "camera":
-                        CameraSituation = CameraSituation == 1? 0: 1;
+                        CameraSituation = CameraSituation == 1 ? 0 : 1;
                         this.setPolicy();
                         System.out.println("Switch camera environment!" + CameraSituation);
                         break;
                     default:
                         System.out.println("Not Valid 'situation' input!");
                 }
-            }
-            else {
+            } else {
                 System.out.println("Not valid 'user config input!");
             }
         }
@@ -871,7 +884,7 @@ public class PETUtils implements Serializable {
         }
     }
 
-    public static class SensorReadingToCSV extends RichSinkFunction<SensorReading>{
+    public static class SensorReadingToCSV extends RichSinkFunction<SensorReading> {
         private final String filePath;
         private final String delimiter;
         private CsvOutputFormat<String> outputFormat;
@@ -893,10 +906,10 @@ public class PETUtils implements Serializable {
         public void invoke(SensorReading value, Context context) throws Exception {
             value.recordTimer();
             StringBuilder tmp = new StringBuilder();
-            for (Long time: value.getTimerRecord()){
+            for (Long time : value.getTimerRecord()) {
                 tmp.append(time).append(delimiter);
             }
-            for (Integer pet: value.getPETPolicy().values()){
+            for (Integer pet : value.getPETPolicy().values()) {
                 tmp.append(pet).append(delimiter);
             }
             tmp.deleteCharAt(tmp.length() - 1);
@@ -904,6 +917,7 @@ public class PETUtils implements Serializable {
             outputFormat.writeRecord(tmp.toString());
             outputFormat.flush();
         }
+
 
         public void close() throws Exception {
             super.close();
@@ -913,36 +927,73 @@ public class PETUtils implements Serializable {
         }
     }
 
-    // Helper Functions
+    public static class DataWrapperToCSV extends RichSinkFunction<ImageWrapper> {
+        private final String filePath;
+        private final String delimiter;
+        private CsvOutputFormat<String> outputFormat;
 
-    /**
-     * Helper function to convert raw input data source into POJO
-     * @param input The input stream from the gps information in raw String csv format
-     * @param Image Byte array format of input image
-     * @return SensorReading POJO
-     */
-    public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image){
-        String[] fields = input.split(",");
-        return new SensorReading(new Double(fields[0]),
-                new Double(fields[1]),
-                new Double(fields[2]),
-                new Double(fields[3]),
-                new Double(fields[12]),
-                new Double(fields[13]),
-                new Double(fields[9]),
-                Image);
-    }
+        public DataWrapperToCSV(String filePath, String delimiter) {
+            this.filePath = filePath;
+            this.delimiter = delimiter;
+        }
 
-    public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value){
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
-            System.out.println(bais);
-            BufferedImage image = ImageIO.read(bais);
-            String filePath = OutputPath + counter + "." + DataType;
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            super.open(parameters);
+            this.outputFormat = new CsvOutputFormat<>(filePath);
+            this.outputFormat.configure(parameters);
+            this.outputFormat.open(getRuntimeContext().getIndexOfThisSubtask(), getRuntimeContext().getNumberOfParallelSubtasks());
+        }
 
-            ImageIO.write(image, DataType, new File(filePath));
+        @Override
+        public void invoke(ImageWrapper value, Context context) throws Exception {
+            value.recordTimer();
+            StringBuilder tmp = new StringBuilder();
+            for (Long time : value.getTimerRecord()) {
+                tmp.append(time).append(delimiter);
+            }
+            for (Integer pet : value.getPETPolicy().values()) {
+                tmp.append(pet).append(delimiter);
+            }
+            tmp.deleteCharAt(tmp.length() - 1);
+//            tmp.append("\n");
+            outputFormat.writeRecord(tmp.toString());
+            outputFormat.flush();
+        }
 
-        } catch (IOException e) {
-            System.out.println("Error writing image file: " + e.getMessage());
+
+        // Helper Functions
+
+        /**
+         * Helper function to convert raw input data source into POJO
+         *
+         * @param input The input stream from the gps information in raw String csv format
+         * @param Image Byte array format of input image
+         * @return SensorReading POJO
+         */
+        public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image) {
+            String[] fields = input.split(",");
+            return new SensorReading(new Double(fields[0]),
+                    new Double(fields[1]),
+                    new Double(fields[2]),
+                    new Double(fields[3]),
+                    new Double(fields[12]),
+                    new Double(fields[13]),
+                    new Double(fields[9]),
+                    Image);
+        }
+
+        public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value) {
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
+                System.out.println(bais);
+                BufferedImage image = ImageIO.read(bais);
+                String filePath = OutputPath + counter + "." + DataType;
+
+                ImageIO.write(image, DataType, new File(filePath));
+
+            } catch (IOException e) {
+                System.out.println("Error writing image file: " + e.getMessage());
+            }
         }
     }
 }

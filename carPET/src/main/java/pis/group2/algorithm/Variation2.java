@@ -39,8 +39,12 @@ public class Variation2 {
                         .map(new PETUtils.applyPETForImage<>(PETconfpath));
 
                 // Sink
-                dataResultStream.print("Data");
-                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
+//                dataResultStream.print("Data");
+                dataResultStream.addSink(new PETUtils.SensorReadingToCSV(
+                        "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/variation2_gps.csv", ","));
+//                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
+                imageResultStream.addSink(new PETUtils.DataWrapperToCSV(
+                        "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/variation2_gps.csv", ","));
 
             }
         };
