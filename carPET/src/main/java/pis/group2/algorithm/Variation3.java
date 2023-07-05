@@ -1,11 +1,14 @@
 package pis.group2.algorithm;
 
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
+import pis.group2.beams.generalSensorReading;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,20 +26,20 @@ public class Variation3 {
             public void buildPipeline() throws Exception {
                 env.setParallelism(1);
 
-                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
+                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
                 DataStreamSource<String> dataStream = env.readTextFile(inputPath);
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
                 PETProcessor speedProcessor = new PETProcessor(this.PETconfpath, "SPEED") {
+
                     @Override
-                    public DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation() {
-                        return StreamLoader.getRawStream().map(new MapFunction<String, Tuple3<Integer, ArrayList<Integer>, String>>() {
+                    public DataStream<Tuple2<Integer, String>> evaluation() {
+                        return StreamLoader.getRawStream().map(new MapFunction<String, Tuple2<Integer, String>>() {
                             private int counter = 0;
                             @Override
-                            public Tuple3<Integer, ArrayList<Integer>, String> map(String s) throws Exception {
+                            public Tuple2<Integer, String> map(String s) throws Exception {
                                 counter ++;
-                                ArrayList<Integer> list = new ArrayList<>(Arrays.asList(1, counter > 5 ? 2 : 1));
-                                return new Tuple3<>(counter > 5 ? 1 : 0, list, s);
+                                return new Tuple2<>(counter > 5 ? 1 : 0, s);
                             }
                         });
                     }
@@ -44,20 +47,21 @@ public class Variation3 {
 
                 PETProcessor locationProcessor = new PETProcessor(this.PETconfpath, "LOCATION") {
                     @Override
-                    public DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation() {
-                        return StreamLoader.getRawStream().map(new MapFunction<String, Tuple3<Integer, ArrayList<Integer>, String>>() {
+                    public DataStream<Tuple2<Integer, String>> evaluation() {
+                        return StreamLoader.getRawStream().map(new MapFunction<String, Tuple2<Integer, String>>() {
                             private int counter = 0;
                             @Override
-                            public Tuple3<Integer, ArrayList<Integer>, String> map(String s) throws Exception {
+                            public Tuple2<Integer, String> map(String s) throws Exception {
                                 counter ++;
-                                ArrayList<Integer> list = new ArrayList<>(Arrays.asList(1, counter > 5 ? 3 : 2));
-                                return new Tuple3<>(counter > 5 ? 1 : 0, list, s);
+                                return new Tuple2<>(counter > 5 ? 1 : 0, s);
                             }
                         });
                     }
                 };
-                speedProcessor.run(dataStream);
-                locationProcessor.run(dataStream);
+                SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(dataStream);
+                SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(dataStream);
+                speedResult.print("Speed");
+                locationResult.print("Location");
             }
         };
     }

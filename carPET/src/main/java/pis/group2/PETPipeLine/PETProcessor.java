@@ -4,24 +4,22 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.api.common.state.ListState;
-import org.apache.flink.api.common.state.ListStateDescriptor;
-import org.apache.flink.api.common.state.ValueState;
-import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
-import org.apache.flink.streaming.api.functions.co.CoMapFunction;
-import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction;
-import org.apache.flink.streaming.api.functions.co.RichCoMapFunction;
-import pis.group2.PETLoader.PETLoader;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import pis.group2.PETLoader.StreamLoader;
 import pis.group2.beams.SingleReading;
 import pis.group2.beams.generalSensorReading;
 import pis.group2.utils.PETUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.Serializable;
 import java.util.*;
 
@@ -31,12 +29,47 @@ public abstract class PETProcessor implements Serializable {
 //    private final PETLoader<?> PETLoader;
     private final String PETConfPath;
     private final String TYPE;
+    private JSONObject PETLibrary;
+    private Integer size;
+    private HashMap<String, ArrayList<Integer>> PETComponent;
 
     public PETProcessor(String confPath, String TYPE) throws Exception {
         StreamLoader = new StreamLoader();
         this.TYPE = TYPE;
 //        this.PETLoader = new PETLoader<>(confPath, TYPE, 0);
         this.PETConfPath = confPath;
+        this.loadConf();
+    }
+
+    public PETProcessor(pis.group2.PETLoader.StreamLoader streamLoader, String PETConfPath, String TYPE) {
+        StreamLoader = streamLoader;
+        this.PETConfPath = PETConfPath;
+        this.TYPE = TYPE;
+    }
+
+    private void loadConf() throws FileNotFoundException {
+        PETComponent = new HashMap<>();
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(PETConfPath));
+            // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
+            JSONObject jsonObject = (JSONObject) obj;
+            PETLibrary = (JSONObject) jsonObject.get(TYPE);
+            size = PETLibrary.size();
+            ArrayList<Integer> integers = new ArrayList<>();
+            for (Object index: PETLibrary.keySet()){
+                integers.clear();
+                JSONObject tmp = (JSONObject) PETLibrary.get(index);
+                JSONArray element = (JSONArray) tmp.get("Component");
+                for (int i = 0; i < element.size(); i++) {
+                    String string = element.get(i).toString();
+                    integers.add(Integer.valueOf(string));
+                }
+                PETComponent.put((String) index, integers);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setStream(HashMap<String, DataStream<SingleReading<?>>> input){
@@ -47,9 +80,9 @@ public abstract class PETProcessor implements Serializable {
         return StreamLoader.combineStreams(names);
     }
 
-    public void run(DataStream<String> input){
+    public SingleOutputStreamOperator<generalSensorReading> run(DataStream<String> input){
         this.setRawStream(input);
-        this.processLogic();
+        return this.processLogic();
     }
 
     private void setRawStream(DataStream<String> input){
@@ -64,20 +97,12 @@ public abstract class PETProcessor implements Serializable {
         StreamLoader.testPrint(names);
     }
 
-    public void processLogic() {
-//        SingleOutputStreamOperator<Tuple3<Integer, ArrayList<Integer>, String>> evaluatedRawStream = this.StreamLoader.getRawStream().map(new MapFunction<String, Tuple3<Integer, ArrayList<Integer>, String>>() {
-//            @Override
-//            public Tuple3<Integer, ArrayList<Integer>, String> map(String s) throws Exception {
-//                Integer index = evaluateRawData(s);
-//                // Only for testing!!!!!
-//                ArrayList<Integer> tmp = new ArrayList<>(Arrays.asList(0, index == 1 ? 2 : 1, 3));
-//                return new Tuple3<>(index, tmp, s);
-////                return new Tuple3<>(index, PETLoader.getComponents(), s);
-//            }
-//        });
-        DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluatedRawStream = evaluation();
+    public SingleOutputStreamOperator<generalSensorReading> processLogic() {
 
-        SingleOutputStreamOperator<generalSensorReading> dataSource = evaluatedRawStream.map(new selectData());
+        DataStream<Tuple2<Integer, String>> evaluatedRawStream = evaluation();
+        SingleOutputStreamOperator<Tuple3<Integer, ArrayList<Integer>, String>> evaluatedComponentStream = evaluatedRawStream.map(new addComponents(PETComponent));
+
+        SingleOutputStreamOperator<generalSensorReading> dataSource = evaluatedComponentStream.map(new selectData());
         SingleOutputStreamOperator<generalSensorReading> filteredDataSource = dataSource.filter(new FilterFunction<generalSensorReading>() {
             @Override
             public boolean filter(generalSensorReading generalSensorReading) throws Exception {
@@ -86,10 +111,12 @@ public abstract class PETProcessor implements Serializable {
         });
 //        filteredDataSource.print();
         SingleOutputStreamOperator<generalSensorReading> resultStream = filteredDataSource.map(new PETUtils.applyPETForGeneralSensorReading<>(PETConfPath, TYPE));
-        resultStream.print(this.TYPE);
+//        resultStream.print(this.TYPE);
+        return resultStream;
     }
 
-    public abstract DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation();
+//    public abstract DataStream<Tuple3<Integer, ArrayList<Integer>, String>> evaluation();
+    public abstract DataStream<Tuple2<Integer, String>> evaluation();
     public Integer evaluateRawData(String s) throws NotImplementedException {
         throw new NotImplementedException("");
     }
@@ -132,4 +159,31 @@ public abstract class PETProcessor implements Serializable {
             return generalSensorReading;
         }
     }
+
+    public static class addComponents implements MapFunction<Tuple2<Integer, String>, Tuple3<Integer, ArrayList<Integer>, String>>{
+        private HashMap<String, ArrayList<Integer>> component;
+
+        public addComponents(HashMap<String, ArrayList<Integer>> component) {
+            this.component= component;
+        }
+
+        @Override
+        public Tuple3<Integer, ArrayList<Integer>, String> map(Tuple2<Integer, String> integerStringTuple2) throws Exception {
+            String f0 = String.valueOf(integerStringTuple2.f0);
+            ArrayList<Integer> integers = component.get(f0);
+            return new Tuple3<>(integerStringTuple2.f0, integers, integerStringTuple2.f1);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        PETProcessor petProcessor = new PETProcessor("/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/config/PETconfig.json", "SPEED") {
+
+            @Override
+            public DataStream<Tuple2<Integer, String>> evaluation() {
+                return null;
+            }
+        };
+    }
+
+
 }

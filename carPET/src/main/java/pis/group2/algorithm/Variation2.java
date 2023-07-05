@@ -6,7 +6,7 @@ import pis.group2.beams.ImageWrapper;
 import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 
-public class Variarion2 {
+public class Variation2 {
     public static void main(String[] args) throws Exception {
         if (args.length != 1){
             System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");

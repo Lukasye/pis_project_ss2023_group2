@@ -1,8 +1,6 @@
 package pis.group2.PETLoader;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonAlias;
-import org.apache.flink.streaming.api.transformations.SideOutputTransformation;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
