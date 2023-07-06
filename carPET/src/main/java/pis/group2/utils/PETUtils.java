@@ -63,13 +63,15 @@ public class PETUtils implements Serializable {
         @Override
         public SensorReading map(String s) throws Exception {
             String[] fields = s.split(",");
-            return new SensorReading(new Double(fields[0]),
+            SensorReading sensorReading = new SensorReading(new Double(fields[0]),
                     new Double(fields[1]),
                     new Double(fields[2]),
                     new Double(fields[3]),
                     new Double(fields[12]),
                     new Double(fields[13]),
                     new Double(fields[9]));
+            sensorReading.recordTimer();
+            return sensorReading;
         }
     }
 
@@ -80,7 +82,9 @@ public class PETUtils implements Serializable {
 
         @Override
         public ImageWrapper map(byte[] bytes) throws Exception {
-            return new ImageWrapper(bytes);
+            ImageWrapper imageWrapper = new ImageWrapper(bytes);
+            imageWrapper.recordTimer();
+            return imageWrapper;
         }
     }
 
@@ -243,18 +247,19 @@ public class PETUtils implements Serializable {
 
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
-            sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
             // check the dirty bit, if the data is already modified, update the policy
-            if (Integer.parseInt(jedis.get("dirty")) == 1) {
-                this.getPolicy();
-                jedis.set("dirty", "0");
-            }
+//            if (Integer.parseInt(jedis.get("dirty")) == 1) {
+//                this.getPolicy();
+//                jedis.set("dirty", "0");
+//            }
+            this.getPolicy();
             Double distance = MathUtils.calculateDistance(UserHome, sensorReading.getPosition());
             int locationPET = (distance < thredhold) ? 1 : 0;
             sensorReading.setPETPolicy("LOCATION", locationPET);
             sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
             sensorReading.setPETPolicy("IMAGE", 0);
+            sensorReading.recordTimer();
             return sensorReading;
 //            }
         }
@@ -301,16 +306,17 @@ public class PETUtils implements Serializable {
 
         @Override
         public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
-            sensorReading.recordTimer();
 //            try(Jedis jedis = this.jedisPool.getResource()) {
             // check the dirty bit, if the data is already modified, update the policy
-            if (Integer.parseInt(jedis.get("dirty")) == 1) {
-                this.getPolicy();
-                jedis.set("dirty", "0");
-            }
+//            if (Integer.parseInt(jedis.get("dirty")) == 1) {
+//                this.getPolicy();
+//                jedis.set("dirty", "0");
+//            }
+            this.getPolicy();
             sensorReading.setPETPolicy("LOCATION", 0);
             sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
             sensorReading.setPETPolicy("IMAGE", CameraSituation == 1 ? UserCameraPolicy : 0);
+            sensorReading.recordTimer();
             return sensorReading;
 //            }
         }
@@ -363,12 +369,12 @@ public class PETUtils implements Serializable {
          */
         @Override
         public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
-            sensorReading.recordTimer();
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
                 reloadPET();
             }
+            sensorReading.recordTimer();
             byte[] invoke_img = (byte[]) PETLoader.invoke((T) sensorReading.getImage()).get(0);
             sensorReading.setImage(invoke_img);
             return sensorReading;
@@ -426,13 +432,13 @@ public class PETUtils implements Serializable {
          */
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
-            sensorReading.recordTimer();
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
                 System.out.println("ApplyPET: ReloadPET......");
                 reloadPET();
             }
+            sensorReading.recordTimer();
             switch (Type) {
                 case "SPEED":
                     Double invoke_speed = (Double) PETLoader.invoke((T) sensorReading.getVel()).get(0);
@@ -726,11 +732,11 @@ public class PETUtils implements Serializable {
 
 //            System.out.println(value.getImage());
             try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
-                System.out.println(bais);
+//                System.out.println(bais);
                 BufferedImage image = ImageIO.read(bais);
                 counter++;
                 String filePath = OutputPath + counter + "." + DataType;
-                System.out.println(filePath);
+//                System.out.println(filePath);
 
                 ImageIO.write(image, DataType, new File(filePath));
 
@@ -843,7 +849,7 @@ public class PETUtils implements Serializable {
                 UserSpeedPolicy = Integer.valueOf(fields[3]);
                 this.setPolicy();
                 System.out.println("Change policy setting!");
-                System.out.println("Current policy: " + UserLocationPolicy + UserSpeedPolicy + UserCameraPolicy);
+                System.out.println("Current policy: " + UserLocationPolicy + UserCameraPolicy + UserSpeedPolicy);
             } else if (value.startsWith("situation")) {
                 String[] fields = value.split(",");
                 switch (fields[1]) {

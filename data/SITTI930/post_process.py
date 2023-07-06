@@ -10,7 +10,7 @@ from datetime import datetime
 alt.renderers.enable('jupyterlab')
 
 
-def main():
+def variation1():
     colums = ['create', 'location', 'speed', 'camera', 'end', 'locationpolicy', 'speedpolicy', 'camerapolicy']
     df = pd.read_csv('./timerecord.csv', names=colums, header=None)
     # df['create'] = [datetime.fromtimestamp(x) for x in df['create']]
@@ -50,6 +50,58 @@ def main():
 
     plt.show()
 
+def variation2():
+    colums_gps = ['create', 'evaluation', 'location', 'speed', 'end', 'locationpolicy', 'speedpolicy', 'camerapolicy']
+    colums_img = ['create', 'evaluation', 'image', 'end', 'locationpolicy', 'speedpolicy', 'camerapolicy']
+    df_gps = pd.read_csv('./variation2_gps.csv', names=colums_gps, header=None)
+    df_img = pd.read_csv('./variation2_img.csv', names=colums_img, header=None)
+
+
+    df_gps['createTime'] = df_gps['evaluation'] - df_gps['create']
+    df_img['createTime'] = df_img['evaluation'] - df_img['create']
+
+    df_gps['evaluationTime'] = df_gps['location'] - df_gps['evaluation']
+    df_img['evaluationTime'] = df_img['image'] - df_img['evaluation']
+
+    df_gps['processTime'] = df_gps['end'] - df_gps['location']
+    df_img['processTime'] = df_img['end'] - df_img['image']
+
+
+    df_gps.sort_values(by=['create'])
+    df_img.sort_values(by=['create'])
+    df_gps['start_diff'] = df_gps['create'] - df_gps['create'][0]
+    df_img['start_diff'] = df_img['create'] - df_img['create'][0]
+    # df = df[9:]
+    df_gps = df_gps[30:50]
+    df_img = df_img[30:50]
+
+    species = np.arange(len(df_gps))
+    width = 0.5
+
+    fig, axes = plt.subplots(nrows=2, ncols=1)
+    bottom = np.zeros(len(df_gps)) + list(df_gps.to_dict()['start_diff'].values())
+    bottom_img = np.zeros(len(df_gps)) + list(df_img.to_dict()['start_diff'].values())
+
+    legend = ['createTime', 'evaluationTime', 'processTime']
+    for name in legend:
+        weight_count = list(df_gps.to_dict()[name].values())
+        weight_count_img = list(df_img.to_dict()[name].values())
+        axes[0].bar(species, weight_count, width, bottom=bottom)
+        axes[1].bar(species, weight_count_img, width, bottom=bottom_img)
+        bottom += weight_count
+        bottom_img += weight_count_img
+        print(bottom[0])
+
+    # fig.set_title("Stream Processing Timeline")
+    axes[1].set_xlabel('Events')
+    axes[0].set_ylabel('Duration(ns)')
+    axes[1].set_ylabel('Duration(ns)')
+    axes[0].legend(legend)
+    axes[1].legend(legend)
+
+    plt.show()
+
 
 if __name__ == '__main__':
-    main()
+    # variation1()
+    variation2()

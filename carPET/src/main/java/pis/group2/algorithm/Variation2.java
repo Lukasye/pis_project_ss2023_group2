@@ -18,7 +18,7 @@ public class Variation2 {
             public void buildPipeline() {
                 env.setParallelism(1);
                 // Initialize data source
-                initKafka();
+                initKafka(500L);
                 // Initialize JedisPool
                 // Convert to POJO
                 SingleOutputStreamOperator<ImageWrapper> ImageWrapperStream = imageSource.map(new PETUtils.toImageWrapper());
@@ -41,10 +41,10 @@ public class Variation2 {
                 // Sink
 //                dataResultStream.print("Data");
                 dataResultStream.addSink(new PETUtils.SensorReadingToCSV(
-                        "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/variation2_gps.csv", ","));
-//                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
+                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_gps.csv", ","));
                 imageResultStream.addSink(new PETUtils.DataWrapperToCSV(
-                        "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/result/variation2_gps.csv", ","));
+                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_img.csv", ","));
+                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
 
             }
         };

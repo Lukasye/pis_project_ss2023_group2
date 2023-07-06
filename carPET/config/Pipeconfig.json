@@ -1,7 +1,7 @@
 {
   "PET-CONF": "config/PETconfig.json",
   "TESTDATA-PATH": "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data",
-  "IMAGE-OUTPUT-PATH": "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\",
+  "IMAGE-OUTPUT-PATH": "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\img\\",
   "USER-CONF": "config/Userconfig.json",
   "PET-TYPE": ["SPEED", "LOCATION", "IMAGE"],
 
