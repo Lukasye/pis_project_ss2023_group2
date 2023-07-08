@@ -15,9 +15,7 @@ import pis.group2.PETLoader.StreamLoader;
 import pis.group2.beams.SingleReading;
 import pis.group2.beams.generalSensorReading;
 import pis.group2.utils.PETUtils;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Serializable;
@@ -56,9 +54,8 @@ public abstract class PETProcessor implements Serializable {
             JSONObject jsonObject = (JSONObject) obj;
             PETLibrary = (JSONObject) jsonObject.get(TYPE);
             size = PETLibrary.size();
-            ArrayList<Integer> integers = new ArrayList<>();
             for (Object index: PETLibrary.keySet()){
-                integers.clear();
+                ArrayList<Integer> integers = new ArrayList<>();
                 JSONObject tmp = (JSONObject) PETLibrary.get(index);
                 JSONArray element = (JSONArray) tmp.get("Component");
                 for (int i = 0; i < element.size(); i++) {

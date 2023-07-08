@@ -51,6 +51,9 @@ public abstract class PETPipeLine {
     protected SingleOutputStreamOperator<String> dataSource;
     protected SingleOutputStreamOperator<String> userSource;
     protected Tuple3<String, String, String> RedisConfig;
+    protected FlinkKafkaConsumer011<byte[]> kafkaSource;
+    protected FlinkKafkaConsumer011<String> sensorDataConsumer;
+    protected FlinkKafkaConsumer011<String> userDataConsumer;
 
     /**
      * create the Pipeline and initialisation, read the configurations
@@ -105,13 +108,16 @@ public abstract class PETPipeLine {
         env.execute();
     }
 
-    public void initKafka(){
-        FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
+    protected void initKafkaSource(){
+        kafkaSource = new FlinkKafkaConsumer011<>(
                 IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
-        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
+        sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
                 BOOTSTRAPSERVER, GROUPID);
-        FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
+        userDataConsumer = createStringConsumerForTopic(USERTOPIC,
                 BOOTSTRAPSERVER, GROUPID);
+    }
+    public void initKafka(){
+        initKafkaSource();
         imageSource = env.addSource(kafkaSource);
         dataSource = env.addSource(sensorDataConsumer);
         userSource = env.addSource(userDataConsumer);
@@ -135,12 +141,7 @@ public abstract class PETPipeLine {
     }
 
     public void initKafka(Long timeout){
-        FlinkKafkaConsumer011<byte[]> kafkaSource = new FlinkKafkaConsumer011<>(
-                IMAGETOPIC, new PETUtils.ReadByteAsStream(), kafkaPropertyImg);
-        FlinkKafkaConsumer011<String> sensorDataConsumer = createStringConsumerForTopic(GPSTOPIC,
-                BOOTSTRAPSERVER, GROUPID);
-        FlinkKafkaConsumer011<String> userDataConsumer = createStringConsumerForTopic(USERTOPIC,
-                BOOTSTRAPSERVER, GROUPID);
+        initKafkaSource();
         imageSource = env.addSource(kafkaSource).setBufferTimeout(timeout);
         dataSource = env.addSource(sensorDataConsumer).setBufferTimeout(timeout);
         userSource = env.addSource(userDataConsumer).setBufferTimeout(timeout);

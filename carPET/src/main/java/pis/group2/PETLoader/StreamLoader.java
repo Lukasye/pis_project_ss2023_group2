@@ -3,6 +3,7 @@ package pis.group2.PETLoader;
 import com.twitter.chill.java.ArraysAsListSerializer;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.shaded.netty4.io.netty.util.concurrent.SingleThreadEventExecutor;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -67,16 +68,17 @@ public class StreamLoader implements Serializable {
         }
     }
 
-    public static HashMap<String, DataStream<SingleReading<?>>> SplitStringDataSource(DataStream<String> input, ArrayList<String> NameList){
-        HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = new HashMap<>();
+    public static HashMap<String, DataStream<Tuple2<String, Double>>> SplitStringDataSource(DataStream<String> input, ArrayList<String> NameList){
+        HashMap<String, DataStream<Tuple2<String, Double>>> stringDataStreamHashMap = new HashMap<>();
         for (int i = 0; i < NameList.size(); i++) {
             int finalI = i;
             String name = NameList.get(i);
-            stringDataStreamHashMap.put(name, input.map(new MapFunction<String, SingleReading<?>>() {
+            stringDataStreamHashMap.put(name, input.map(new MapFunction<String, Tuple2<String, Double>>() {
                 @Override
-                public SingleReading<?> map(String s) throws Exception {
+                public Tuple2<String, Double> map(String s) throws Exception {
                     String[] split = s.split(",");
-                    return new SingleReading<>(split[finalI], name) ;
+                    Double bar = Double.valueOf(split[finalI]);
+                    return new Tuple2<>(name, bar) ;
                 }
             }));
         }
