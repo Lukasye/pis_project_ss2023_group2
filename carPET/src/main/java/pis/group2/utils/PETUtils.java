@@ -518,6 +518,7 @@ public class PETUtils implements Serializable {
                 System.out.println("ApplyPET: ReloadPET......");
                 reloadPET();
             }
+            sensorReading.recordTimer();
             switch (Type) {
                 case "SPEED":
                     Integer integer = components.get(0);
@@ -968,38 +969,72 @@ public class PETUtils implements Serializable {
         }
 
 
-        // Helper Functions
+        public static class generalSensorReadingToCSV extends RichSinkFunction<generalSensorReading> {
+            private final String filePath;
+            private final String delimiter;
+            private CsvOutputFormat<String> outputFormat;
 
-        /**
-         * Helper function to convert raw input data source into POJO
-         *
-         * @param input The input stream from the gps information in raw String csv format
-         * @param Image Byte array format of input image
-         * @return SensorReading POJO
-         */
-        public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image) {
-            String[] fields = input.split(",");
-            return new SensorReading(new Double(fields[0]),
-                    new Double(fields[1]),
-                    new Double(fields[2]),
-                    new Double(fields[3]),
-                    new Double(fields[12]),
-                    new Double(fields[13]),
-                    new Double(fields[9]),
-                    Image);
+            public generalSensorReadingToCSV(String filePath, String delimiter) {
+                this.filePath = filePath;
+                this.delimiter = delimiter;
+            }
+
+            @Override
+            public void open(Configuration parameters) throws Exception {
+                super.open(parameters);
+                this.outputFormat = new CsvOutputFormat<>(filePath);
+                this.outputFormat.configure(parameters);
+                this.outputFormat.open(getRuntimeContext().getIndexOfThisSubtask(), getRuntimeContext().getNumberOfParallelSubtasks());
+            }
+
+            @Override
+            public void invoke(generalSensorReading value, Context context) throws Exception {
+                value.recordTimer();
+                StringBuilder tmp = new StringBuilder();
+                for (Long time : value.getTimerRecord()) {
+                    tmp.append(time).append(delimiter);
+                }
+                tmp.append(value.getPolicy()).append(delimiter);
+                tmp.deleteCharAt(tmp.length() - 1);
+//            tmp.append("\n");
+                outputFormat.writeRecord(tmp.toString());
+                outputFormat.flush();
+            }
         }
 
-        public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value) {
-            try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
-                System.out.println(bais);
-                BufferedImage image = ImageIO.read(bais);
-                String filePath = OutputPath + counter + "." + DataType;
 
-                ImageIO.write(image, DataType, new File(filePath));
+            // Helper Functions
 
-            } catch (IOException e) {
-                System.out.println("Error writing image file: " + e.getMessage());
+            /**
+             * Helper function to convert raw input data source into POJO
+             *
+             * @param input The input stream from the gps information in raw String csv format
+             * @param Image Byte array format of input image
+             * @return SensorReading POJO
+             */
+            public static SensorReading createSensorReadingFromRawInput(String input, byte[] Image) {
+                String[] fields = input.split(",");
+                return new SensorReading(new Double(fields[0]),
+                        new Double(fields[1]),
+                        new Double(fields[2]),
+                        new Double(fields[3]),
+                        new Double(fields[12]),
+                        new Double(fields[13]),
+                        new Double(fields[9]),
+                        Image);
+            }
+
+            public static void saveImage(String OutputPath, Integer counter, String DataType, SensorReading value) {
+                try (ByteArrayInputStream bais = new ByteArrayInputStream(value.getImage())) {
+                    System.out.println(bais);
+                    BufferedImage image = ImageIO.read(bais);
+                    String filePath = OutputPath + counter + "." + DataType;
+
+                    ImageIO.write(image, DataType, new File(filePath));
+
+                } catch (IOException e) {
+                    System.out.println("Error writing image file: " + e.getMessage());
+                }
             }
         }
     }
-}

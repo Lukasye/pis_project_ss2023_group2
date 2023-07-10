@@ -2,16 +2,13 @@ package pis.group2.algorithm;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
 import pis.group2.beams.generalSensorReading;
+import pis.group2.utils.PETUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 public class Variation3 {
@@ -24,11 +21,15 @@ public class Variation3 {
         new PETPipeLine(path) {
             @Override
             public void buildPipeline() throws Exception {
+                this.initKafka();
                 env.setParallelism(1);
 
-                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
-                DataStreamSource<String> dataStream = env.readTextFile(inputPath);
+                // Mini Sample test
+//                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
+//                DataStreamSource<String> dataStream = env.readTextFile(inputPath);
+
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
+
 
                 PETProcessor speedProcessor = new PETProcessor(this.PETconfpath, "SPEED") {
 
@@ -39,7 +40,7 @@ public class Variation3 {
                             @Override
                             public Tuple2<Integer, String> map(String s) throws Exception {
                                 counter ++;
-                                return new Tuple2<>(counter > 5 ? 1 : 0, s);
+                                return new Tuple2<>(DummyPolicySelector(counter), s);
                             }
                         });
                     }
@@ -53,16 +54,28 @@ public class Variation3 {
                             @Override
                             public Tuple2<Integer, String> map(String s) throws Exception {
                                 counter ++;
-                                return new Tuple2<>(counter > 5 ? 1 : 0, s);
+                                return new Tuple2<>(DummyPolicySelector(counter), s);
                             }
                         });
                     }
                 };
-                SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(dataStream);
-                SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(dataStream);
-                speedResult.print("Speed");
-                locationResult.print("Location");
+                SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(dataSource);
+                SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(dataSource);
+//                speedResult.print("Speed");
+//                locationResult.print("Location");
+                speedResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
+                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_speed.csv", ","));
+                locationResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
+                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_location.csv", ","));
             }
         };
+    }
+
+    public static int DummyPolicySelector(int Counter){
+        if (Counter < 50){
+            return 0;
+        } else {
+            return (Counter % 2 )== 0? 1: 0;
+        }
     }
 }

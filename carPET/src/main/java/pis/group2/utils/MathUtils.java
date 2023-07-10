@@ -12,4 +12,6 @@ public class MathUtils {
         Double y2 = p2.f1;
         return sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
     }
+
+
 }

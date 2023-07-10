@@ -8,9 +8,19 @@ public class generalSensorReading implements Serializable {
     private final HashMap<Integer, Double> data;
     private Integer Policy;
     private Object result;
+    protected ArrayList<Long> TimerRecord;
 
     public generalSensorReading() {
         data = new HashMap<>();
+        TimerRecord = new ArrayList<>();
+    }
+
+    public void recordTimer(){
+        TimerRecord.add(System.nanoTime());
+    }
+
+    public ArrayList<Long> getTimerRecord() {
+        return TimerRecord;
     }
 
     public void addData(Integer key, Double value){

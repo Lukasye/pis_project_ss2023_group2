@@ -44,7 +44,7 @@ public class Variation2 {
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_gps.csv", ","));
                 imageResultStream.addSink(new PETUtils.DataWrapperToCSV(
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_img.csv", ","));
-                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
+//                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
 
             }
         };
