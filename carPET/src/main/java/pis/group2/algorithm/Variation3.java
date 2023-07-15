@@ -67,6 +67,8 @@ public class Variation3 {
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_speed.csv", ","));
                 locationResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_location.csv", ","));
+                speedResult.print();
+                locationResult.print();
             }
         };
     }
