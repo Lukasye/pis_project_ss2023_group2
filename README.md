@@ -77,5 +77,13 @@ Variation 1 is shown on the right side, in which the GPS Data and the Image data
 ### Variation 2
 In this variation we deal with the Image and GPS data seperately, so we don't have the logic problem caused by merge Stream. But the problem then would be the management of the global states. Which we applied the Redis database to compromiss this issue.
 
+### Variation 3
+In case there are also demands on dynamic Data Source operations, like if the PET can change the incoming data stream to fit the new requirements. We developed also the variation 3 to deal with such kind of situation. In Flink it's not possible to locally inteprupt the execution of the Topology. So we use a bypass: first we merge all the information sources into a single data package and pass them to the stream, the PET will select the Streams they are going to use ad forward them.<br>
+The lead us to a modification of the design of Pipelines. It turns out that the most of the job for Pipeline implementation is fixed. So, it would be readonable to wrap them into a `PETProcessor` to further simplify the code implementation for our users. The structure is shown in the following figure:<br>
+<img src="./img/PETProcessor.png"  width="40%"><br>
+
+## NiFi Implementation
+NiFi is more intuitive in sense of Topology, since it programm in a GUI. But the downside is that the invocation of packages and functions (from java perticularlly) is strictly restricted. As far as I know only in the form of command line, so it has restrict the usability of NiFi in this approach. But use still test the feasability of NiFi regarding to the dunamisc stream switching, turns out NiFi support the method well enough. The test Topology is also shown following:<br>
+<img src="./img/nifi_gui.png"  width="80%"><br>
 
 ## Evaluation
