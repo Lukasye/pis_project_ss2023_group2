@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
-import altair as alt
-import plotly.express as px
+# import altair as alt
+# import plotly.express as px
 from datetime import datetime
 
 
-alt.renderers.enable('jupyterlab')
+# alt.renderers.enable('jupyterlab')
 
 
 def variation1(plot: bool = False):
@@ -111,7 +111,9 @@ def calculate_diff(path: str, col1: int, col2: int):
 if __name__ == '__main__':
     # variation1()
     # variation2()
-    data1 = calculate_diff('./raw/run100_variation3_location.csv', 2, 1)
+    data1 = calculate_diff('./raw/run100_variation2_img.csv', 2, 1)
+    data1 = data1[38:50]
+    print(data1.mean())
     # data2 = calculate_diff('./raw/run100_variation2_img.csv', 2, 1)
     # data2 = calculate_diff('./raw/variation3_location.csv', 2, 1)
     # data2 = data2[5:100]
@@ -122,4 +124,4 @@ if __name__ == '__main__':
     # plt.xlabel('Messages')
     # plt.legend(['GPS', 'Image'])
     # plt.show()
-    data1.to_csv('./evaluated/run100_Variation3_dyna_load.csv')
+    # data1.to_csv('./evaluated/run100_Variation3_dyna_load.csv')
