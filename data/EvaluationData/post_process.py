@@ -111,8 +111,8 @@ def calculate_diff(path: str, col1: int, col2: int):
 if __name__ == '__main__':
     # variation1()
     # variation2()
-    data1 = calculate_diff('./raw/run100_variation2_img.csv', 2, 1)
-    data1 = data1[38:50]
+    data1 = calculate_diff('./raw/redeploy_variation1.csv', 2, 1)
+    # data1 = data1[5:53]
     print(data1.mean())
     # data2 = calculate_diff('./raw/run100_variation2_img.csv', 2, 1)
     # data2 = calculate_diff('./raw/variation3_location.csv', 2, 1)

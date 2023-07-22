@@ -76,6 +76,7 @@ public class PETLoader<T> implements Serializable{
             throw new IllegalArgumentException();
         } else if (newID >= size) {
             System.out.println("PET ID out of bound! Reloading PET Library");
+            id = newID;
             initialize();
         }else {
             System.out.println(Type + " Policy switched to " + newID);
@@ -83,6 +84,9 @@ public class PETLoader<T> implements Serializable{
             quickLoad();
             locateClass();
         }
+        // Uncomment the following code to test the redeployment latency
+//        id = newID;
+//        initialize();
     }
 
     public void locateClass() throws Exception {

@@ -28,7 +28,7 @@ public class Variation3 {
                 env.setParallelism(1);
 
                 // Mini Sample test
-                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
+                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
                 DataStreamSource<String> data = env.readTextFile(inputPath);
 
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
@@ -64,20 +64,19 @@ public class Variation3 {
                 };
                 SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(data);
                 SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(data);
-//                speedResult.print("Speed");
-//                locationResult.print("Location");
+                speedResult.print("Speed");
+                locationResult.print("Location");
                 speedResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_speed.csv", ","));
                 locationResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
                         "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_location.csv", ","));
-                speedResult.print();
-                locationResult.print();
+
             }
         };
     }
 
     public static int DummyPolicySelector(int Counter){
-        if (Counter < 50){
+        if (Counter < 4){
             return 0;
         } else {
             return (Counter % 2 )== 0? 1: 0;
