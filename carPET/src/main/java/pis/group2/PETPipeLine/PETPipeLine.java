@@ -1,35 +1,20 @@
 package pis.group2.PETPipeLine;
 
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.filesystem.RollingPolicy;
-import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import pis.group2.GUI.SinkGUI;
-import pis.group2.Jedis.DataFetcher;
-import pis.group2.beams.SingleReading;
 import pis.group2.utils.PETUtils;
-import pis.group2.utils.streamSchneider;
 
-import javax.sql.DataSource;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 public abstract class PETPipeLine {
@@ -147,6 +132,10 @@ public abstract class PETPipeLine {
         userSource = env.addSource(userDataConsumer).setBufferTimeout(timeout);
     }
 
+    public DataStreamSource<String> initTextSource(){
+        String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
+        return env.readTextFile(inputPath);
+    }
 
     public static FlinkKafkaConsumer011<String> createStringConsumerForTopic(
             String topic, String kafkaAddress, String kafkaGroup ) {

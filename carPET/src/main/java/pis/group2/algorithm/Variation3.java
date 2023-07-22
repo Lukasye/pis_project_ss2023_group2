@@ -3,12 +3,15 @@ package pis.group2.algorithm;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
+import pis.group2.beams.SingleReading;
 import pis.group2.beams.generalSensorReading;
 import pis.group2.utils.PETUtils;
 
+import java.util.HashMap;
 
 
 public class Variation3 {
@@ -21,12 +24,12 @@ public class Variation3 {
         new PETPipeLine(path) {
             @Override
             public void buildPipeline() throws Exception {
-                this.initKafka();
+//                this.initKafka();
                 env.setParallelism(1);
 
                 // Mini Sample test
-//                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
-//                DataStreamSource<String> dataStream = env.readTextFile(inputPath);
+                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
+                DataStreamSource<String> data = env.readTextFile(inputPath);
 
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
@@ -59,8 +62,8 @@ public class Variation3 {
                         });
                     }
                 };
-                SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(dataSource);
-                SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(dataSource);
+                SingleOutputStreamOperator<generalSensorReading> speedResult = speedProcessor.run(data);
+                SingleOutputStreamOperator<generalSensorReading> locationResult = locationProcessor.run(data);
 //                speedResult.print("Speed");
 //                locationResult.print("Location");
                 speedResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
