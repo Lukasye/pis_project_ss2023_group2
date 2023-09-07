@@ -18,6 +18,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public abstract class PETPipeLine {
+    /**
+     * Class to wrap PETLoader and contain a whole process for the single processing
+     * of one topic, need to be instanciate and realize the function to determine
+     * the evaluation condition
+     */
+
     protected final String confPath;
     protected String PETconfpath;
     protected String ImageOutputPath;

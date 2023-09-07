@@ -7,6 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class SinkGUI extends JFrame implements ActionListener {
+    /**
+     * GUI instance for the visualization of the changes of PET
+     * Not 100% optimized, only for presentation
+     */
     private JLabel Camera;
     private JTextArea SpeedInfo;
     private JTextArea LocationInfo;

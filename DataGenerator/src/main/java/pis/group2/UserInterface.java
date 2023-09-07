@@ -24,6 +24,7 @@ public class UserInterface {
         data2Kafka = new data2Kafka(BOOTSTRAPSERVER, GPSData, DataType);
         img2Kafka = new img2Kafka(BOOTSTRAPSERVER, ImgData);
         usr2Kafka = new usr2Kafka(BOOTSTRAPSERVER);
+        System.out.println("Using Server: " + BOOTSTRAPSERVER);
     }
 
     private void loadConfig() {

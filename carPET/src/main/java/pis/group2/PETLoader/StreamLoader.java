@@ -1,19 +1,11 @@
 package pis.group2.PETLoader;
 
-import com.twitter.chill.java.ArraysAsListSerializer;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.shaded.netty4.io.netty.util.concurrent.SingleThreadEventExecutor;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.beams.SingleReading;
-import pis.group2.utils.streamSchneider;
-
-import javax.xml.crypto.Data;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class StreamLoader implements Serializable {

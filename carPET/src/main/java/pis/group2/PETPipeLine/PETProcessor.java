@@ -22,6 +22,11 @@ import java.io.Serializable;
 import java.util.*;
 
 public abstract class PETProcessor implements Serializable {
+    /**
+     * Class to wrap PETLoader and contain a whole process for the single processing
+     * of one topic, need to be instanciate and realize the function to determine
+     * the evaluation condition
+     */
     private ArrayList<Integer> StreamIndex;
     protected final StreamLoader StreamLoader;
 //    private final PETLoader<?> PETLoader;

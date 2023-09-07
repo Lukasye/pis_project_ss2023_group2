@@ -2,9 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 
-title = 'Flink Variation 1'
-proportions = [.2, .5, 1, .9, 1, 1]
-labels = ['Flow Latency', 'Dynamic Latency', 'Redeployment Latency', 'Maximum Throughput', 'Fault Tolerance', 'Deployment effort']
+Flink1 = {"name": "Flink Variation 1", "pro": [0.8, 0.8, 1, 1, 0.9, 0.8]}
+Flink2 = {"name": "Flink Variation 1", "pro": [1, 1, 0.8, 0.5, 0.9, 0.8]}
+Flink3 = {"name": "Flink Variation 1", "pro": [0.7, 0.7, 0.7, 0.7, 0.9, 0.8]}
+Spark1 = {"name": "Flink Variation 1", "pro": [0.5, 0.6, 0.5, 0.8, 0.9, 0.8]}
+Spark2 = {"name": "Flink Variation 1", "pro": [0.6, 0.5, 0.6, 0.6, 0.9, 0.8]}
+
+proportions = Spark1['pro']
+title = Flink1['name']
+
+labels = ['FL', 'DL', 'RL', 'MT', 'FT', 'DT']
 N = len(proportions)
 proportions = np.append(proportions, 1)
 theta = np.linspace(0, 2 * np.pi, N, endpoint=False)
@@ -13,7 +20,7 @@ y = np.append(np.cos(theta), 0)
 triangles = [[N, i, (i + 1) % N] for i in range(N)]
 triang_backgr = tri.Triangulation(x, y, triangles)
 triang_foregr = tri.Triangulation(x * proportions, y * proportions, triangles)
-cmap = plt.cm.rainbow_r  # or plt.cm.hsv ?
+cmap = plt.cm.coolwarm
 colors = np.linspace(0, 1, N + 1)
 plt.tripcolor(triang_backgr, colors, cmap=cmap, shading='gouraud', alpha=0.4)
 plt.tripcolor(triang_foregr, colors, cmap=cmap, shading='gouraud', alpha=0.8)
@@ -24,5 +31,5 @@ for label, color, xi, yi in zip(labels, colors, x, y):
              va='bottom' if yi > 0.1 else 'top' if yi < -0.1 else 'center')
 plt.axis('off')
 plt.gca().set_aspect('equal')
-plt.title(title)
+# plt.title(title)
 plt.show()

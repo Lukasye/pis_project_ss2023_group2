@@ -6,6 +6,9 @@ import org.apache.flink.configuration.Configuration;
 import java.io.IOException;
 
 public class CsvOutputFormat<T> implements OutputFormat<T> {
+    /**
+     * Class to define the output of the timestamp data into the local filse system
+     */
     private final String filePath;
 
     private transient java.io.FileWriter writer;

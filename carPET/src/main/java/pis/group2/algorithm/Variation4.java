@@ -12,6 +12,11 @@ import java.util.HashMap;
 import static pis.group2.PETLoader.StreamLoader.SplitStringDataSource;
 
 public class Variation4 {
+    /**
+     * Variation to test the dynamic streams reload, but failed
+     * @param args: the path to configuration files
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         if (args.length != 1){
             System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class dataWrapper {
+    /**
+     * Superclass for all the data POJO
+     */
     protected HashMap<String, Integer> PETPolicy;
     protected ArrayList<Long> TimerRecord;
     protected byte[] Image;

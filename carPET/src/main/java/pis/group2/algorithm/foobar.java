@@ -6,6 +6,11 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.api.common.functions.MapFunction;
 
 public class foobar {
+    /**
+     * Class for testing new function that learned in Flink
+     * @param args: path to configuration files
+     * @throws Exception
+     */
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();

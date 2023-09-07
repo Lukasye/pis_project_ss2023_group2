@@ -8,7 +8,14 @@ import pis.group2.utils.PETUtils;
 import scala.Tuple2;
 
 public class Variation1 {
+    /**
+     * Variation one, which merge the streams together before going through the PET processing
+     * additional duplicate filter needed
+     * @param args: path for the configuration files
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
+        // Loading of essential parameters
         if (args.length != 1){
             System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");
             return;

@@ -9,6 +9,9 @@ import pis.group2.utils.PETUtils;
 
 public class demoPipeLine {
     public static void main(String[] args) throws Exception {
+        /*
+         * Pipeline used to demo in the weeklly report
+         */
 
         PETPipeLine petPipeLine = new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
             @Override

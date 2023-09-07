@@ -15,7 +15,14 @@ import java.util.HashMap;
 
 
 public class Variation3 {
+    /**
+     * Variation three which implements the generalization class PETProcessor, which integrate
+     * all the essential functions, still not implemented for the complex data type(image)
+     * @param args: path to the configuration files
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
+        // Loading of essential parameters
         if (args.length != 1){
             System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");
             return;
@@ -34,6 +41,7 @@ public class Variation3 {
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
 
 
+                // implements PETProcessor for SPEED and determine the evaluation functions
                 PETProcessor speedProcessor = new PETProcessor(this.PETconfpath, "SPEED") {
 
                     @Override
@@ -49,6 +57,7 @@ public class Variation3 {
                     }
                 };
 
+                // implements PETProcessor for Location and determine the evaluation functions
                 PETProcessor locationProcessor = new PETProcessor(this.PETconfpath, "LOCATION") {
                     @Override
                     public DataStream<Tuple2<Integer, String>> evaluation() {

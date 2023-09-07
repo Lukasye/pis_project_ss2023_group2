@@ -85,5 +85,14 @@ The lead us to a modification of the design of Pipelines. It turns out that the 
 ## NiFi Implementation
 NiFi is more intuitive in sense of Topology, since it programm in a GUI. But the downside is that the invocation of packages and functions (from java perticularlly) is strictly restricted. As far as I know only in the form of command line, so it has restrict the usability of NiFi in this approach. But use still test the feasability of NiFi regarding to the dunamisc stream switching, turns out NiFi support the method well enough. The test Topology is also shown following:<br>
 <img src="./img/nifi_gui.png"  width="80%"><br>
+The incompatible problem for NiFi prevent us from further implementation for this in the evaluation.
 
 ## Evaluation
+In the evaluation we have tested three variations in Flink. The result is listed as follows:<br>
+<img src="./img/evaluation.png"  width="80%"><br>
+This data is tested with the following metric:
+Flow Latency: Let the data source run at the sampling frequenz and see the time the message need to go from source to sink.<Br>
+Dynamic Latancy: The Tume PET loader need to change from one to another PET strategy which already in the library.<br>
+Redeployment Latancy: The Tume PET loader need to change from one to another PET strategy which is not in the library.<br>
+Maximun Throuput Time: the data source run at the highest speed and see whther message will lose in this process and how long totally it take to finish all the messages.
+Fault tolerance and Deploement effort: Subject opinoin of the programmer. (detail evaluation in the final report)

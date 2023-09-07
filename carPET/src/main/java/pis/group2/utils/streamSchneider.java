@@ -9,6 +9,11 @@ import java.io.Serializable;
 
 
 public class streamSchneider<T> implements Serializable {
+    /**
+     * Preparation for the dynamic stream reload
+     * @param <T> data type of the stream
+     */
+
     public static class convert2Tuple<T> implements MapFunction<T, Tuple2<Object, Class>>{
 
         @Override

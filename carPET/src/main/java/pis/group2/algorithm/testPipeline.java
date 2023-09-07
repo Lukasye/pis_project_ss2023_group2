@@ -9,6 +9,10 @@ import pis.group2.utils.PETUtils;
 
 public class testPipeline{
     public static void main(String[] args) throws Exception {
+        /**
+         * Class to test the basic function of the PET Loder
+         * Work as an example file
+         */
 
         new PETPipeLine("D:\\Projects\\pis_project_ss2023_group2\\carPET\\config\\Pipeconfig.json") {
             @Override

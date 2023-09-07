@@ -3,11 +3,9 @@ package pis.group2.utils;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -20,25 +18,22 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDes
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.util.Collector;
 import pis.group2.GUI.SinkGUI;
-import pis.group2.Jedis.DataFetcher;
-import pis.group2.Jedis.JedisTest;
 import pis.group2.PETLoader.PETLoader;
 import pis.group2.beams.*;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisFactory;
-import redis.clients.jedis.JedisPool;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
 
 import static pis.group2.utils.PETUtils.DataWrapperToCSV.createSensorReadingFromRawInput;
 
 public class PETUtils implements Serializable {
+   // All the functions in this class is needed for the different functions which will
+   // be user in the variation 1 to 4. Including all the source, sink, and process functions
 
 
     /**
@@ -350,8 +345,6 @@ public class PETUtils implements Serializable {
             // Load and initialise the PET method
             PETLoader = new PETLoader<T>(confPath, Type, id);
             PETLoader.initialize();
-//            ClassLoader userCodeClassLoader = getRuntimeContext().getUserCodeClassLoader();
-////            userCodeClassLoader.loadClass()
         }
 
 

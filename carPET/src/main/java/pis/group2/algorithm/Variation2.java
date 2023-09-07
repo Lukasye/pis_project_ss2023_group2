@@ -7,7 +7,13 @@ import pis.group2.beams.SensorReading;
 import pis.group2.utils.PETUtils;
 
 public class Variation2 {
+    /**
+     * Variation 2, which has the global state organized by the external server reddis
+     * @param args: path to the configuration files
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
+        // Loading of essential parameters
         if (args.length != 1){
             System.out.println("Wrong Number of arguments!" + args.length + " Arguments can not be resolved!");
             return;
