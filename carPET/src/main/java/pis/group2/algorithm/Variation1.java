@@ -50,9 +50,9 @@ public class Variation1 {
 //                resultStream.addSink(new PETUtils.showInGUI(GUI));
 //                resultStream.print("Result");
                 resultStream.addSink(new PETUtils.SensorReadingToCSV(
-                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\timerecord.csv",
+                        "/Users/lukasye/Desktop/result/variation1.csv",
                         ","));
-                resultStream.print();
+//                resultStream.print();
 //                resultStream.addSink(new PETUtils.saveDataAsImage<>(ImageOutputPath, FILEEXTENSION));
 
             }

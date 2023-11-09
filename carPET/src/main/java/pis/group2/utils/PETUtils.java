@@ -65,7 +65,7 @@ public class PETUtils implements Serializable {
                     new Double(fields[12]),
                     new Double(fields[13]),
                     new Double(fields[9]));
-            sensorReading.recordTimer();
+//            sensorReading.recordTimer();
             return sensorReading;
         }
     }
@@ -78,7 +78,7 @@ public class PETUtils implements Serializable {
         @Override
         public ImageWrapper map(byte[] bytes) throws Exception {
             ImageWrapper imageWrapper = new ImageWrapper(bytes);
-            imageWrapper.recordTimer();
+//            imageWrapper.recordTimer();
             return imageWrapper;
         }
     }
@@ -190,7 +190,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public boolean filter(SensorReading sensorReading) throws Exception {
-            sensorReading.recordTimer();
+//            sensorReading.recordTimer();
             Double timestamp = sensorReading.getTimestamp();
             if (currentTimeStamp < timestamp) {
                 currentTimeStamp = timestamp;
@@ -254,7 +254,7 @@ public class PETUtils implements Serializable {
             sensorReading.setPETPolicy("LOCATION", locationPET);
             sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
             sensorReading.setPETPolicy("IMAGE", 0);
-            sensorReading.recordTimer();
+//            sensorReading.recordTimer();
             return sensorReading;
 //            }
         }
@@ -311,7 +311,7 @@ public class PETUtils implements Serializable {
             sensorReading.setPETPolicy("LOCATION", 0);
             sensorReading.setPETPolicy("SPEED", SpeedSituation == 1 ? UserSpeedPolicy : 0);
             sensorReading.setPETPolicy("IMAGE", CameraSituation == 1 ? UserCameraPolicy : 0);
-            sensorReading.recordTimer();
+//            sensorReading.recordTimer();
             return sensorReading;
 //            }
         }
@@ -363,6 +363,7 @@ public class PETUtils implements Serializable {
         @Override
         public ImageWrapper map(ImageWrapper sensorReading) throws Exception {
 //            String type = PET.getType();
+            sensorReading.recordTimer();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
                 reloadPET();
@@ -425,10 +426,11 @@ public class PETUtils implements Serializable {
          */
         @Override
         public SensorReading map(SensorReading sensorReading) throws Exception {
+            sensorReading.recordTimer();
 //            String type = PET.getType();
             if (id != sensorReading.getPETPolicy().get(Type)) {
                 id = sensorReading.getPETPolicy().get(Type);
-                System.out.println("ApplyPET: ReloadPET......");
+//                System.out.println("ApplyPET: ReloadPET......");
                 reloadPET();
             }
             sensorReading.recordTimer();
@@ -506,6 +508,7 @@ public class PETUtils implements Serializable {
         @Override
         public generalSensorReading map(generalSensorReading sensorReading) throws Exception {
 //            String type = PET.getType();
+            sensorReading.recordTimer();
             if (!Objects.equals(id, sensorReading.getPolicy())) {
                 id = sensorReading.getPolicy();
                 System.out.println("ApplyPET: ReloadPET......");
@@ -759,6 +762,23 @@ public class PETUtils implements Serializable {
         }
     }
 
+    public static class showInGUI_variation implements SinkFunction<ImageWrapper> {
+        private final SinkGUI GUI;
+
+        public showInGUI_variation(SinkGUI gui) {
+            this.GUI = gui;
+        }
+
+        @Override
+        public void invoke(ImageWrapper value, Context context) throws Exception {
+            SwingUtilities.invokeAndWait(() -> {
+                this.GUI.addImageFromByteArray(value.getImage());
+                this.GUI.addGeneralInfo(String.valueOf(value.getTimestamp()));
+                this.GUI.foolRefresh();
+            });
+        }
+    }
+
     /**
      * Save the gps data information from SensorReading object with the name of the timestamp
      */
@@ -904,7 +924,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public void invoke(SensorReading value, Context context) throws Exception {
-            value.recordTimer();
+//            value.recordTimer();
             StringBuilder tmp = new StringBuilder();
             for (Long time : value.getTimerRecord()) {
                 tmp.append(time).append(delimiter);
@@ -947,7 +967,7 @@ public class PETUtils implements Serializable {
 
         @Override
         public void invoke(ImageWrapper value, Context context) throws Exception {
-            value.recordTimer();
+//            value.recordTimer();
             StringBuilder tmp = new StringBuilder();
             for (Long time : value.getTimerRecord()) {
                 tmp.append(time).append(delimiter);
@@ -982,7 +1002,7 @@ public class PETUtils implements Serializable {
 
             @Override
             public void invoke(generalSensorReading value, Context context) throws Exception {
-                value.recordTimer();
+//                value.recordTimer();
                 StringBuilder tmp = new StringBuilder();
                 for (Long time : value.getTimerRecord()) {
                     tmp.append(time).append(delimiter);

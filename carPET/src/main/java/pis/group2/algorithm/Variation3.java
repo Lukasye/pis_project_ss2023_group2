@@ -7,11 +7,8 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import pis.group2.PETPipeLine.PETPipeLine;
 import pis.group2.PETPipeLine.PETProcessor;
-import pis.group2.beams.SingleReading;
 import pis.group2.beams.generalSensorReading;
 import pis.group2.utils.PETUtils;
-
-import java.util.HashMap;
 
 
 public class Variation3 {
@@ -19,7 +16,6 @@ public class Variation3 {
      * Variation three which implements the generalization class PETProcessor, which integrate
      * all the essential functions, still not implemented for the complex data type(image)
      * @param args: path to the configuration files
-     * @throws Exception
      */
     public static void main(String[] args) throws Exception {
         // Loading of essential parameters
@@ -35,7 +31,7 @@ public class Variation3 {
                 env.setParallelism(1);
 
                 // Mini Sample test
-                String inputPath = "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\PIS_data\\gps_info_mini.csv";
+                String inputPath = "/Users/lukasye/Projects/pis_project_ss2023_group2/carPET/src/main/resources/PIS_data/gps_info_mini.csv";
                 DataStreamSource<String> data = env.readTextFile(inputPath);
 
 //                HashMap<String, DataStream<SingleReading<?>>> stringDataStreamHashMap = SplitStringDataSource(dataStream, names);
@@ -76,9 +72,9 @@ public class Variation3 {
                 speedResult.print("Speed");
                 locationResult.print("Location");
                 speedResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
-                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_speed.csv", ","));
+                        "/Users/lukasye/Desktop/result/variation3_speed.csv", ","));
                 locationResult.addSink(new PETUtils.DataWrapperToCSV.generalSensorReadingToCSV(
-                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation3_location.csv", ","));
+                        "/Users/lukasye/Desktop/result/variation3_location.csv", ","));
 
             }
         };

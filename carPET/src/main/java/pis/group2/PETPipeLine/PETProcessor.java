@@ -109,7 +109,7 @@ public abstract class PETProcessor implements Serializable {
             @Override
             public boolean filter(generalSensorReading generalSensorReading) throws Exception {
                 if (generalSensorReading == null) return false;
-                generalSensorReading.recordTimer();
+//                generalSensorReading.recordTimer();
                 return true;
             }
         });
@@ -156,7 +156,7 @@ public abstract class PETProcessor implements Serializable {
                 return null;
             }
             generalSensorReading generalSensorReading = new generalSensorReading();
-            generalSensorReading.recordTimer();
+//            generalSensorReading.recordTimer();
             generalSensorReading.setPolicy(integerArrayListTuple3.f0);
             for (Integer index: foobar){
                 generalSensorReading.addData(index, Double.valueOf(split[index]));

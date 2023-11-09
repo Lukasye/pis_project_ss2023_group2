@@ -10,7 +10,6 @@ public class Variation2 {
     /**
      * Variation 2, which has the global state organized by the external server reddis
      * @param args: path to the configuration files
-     * @throws Exception
      */
     public static void main(String[] args) throws Exception {
         // Loading of essential parameters
@@ -48,11 +47,13 @@ public class Variation2 {
                 // Sink
 //                dataResultStream.print("Data");
                 dataResultStream.addSink(new PETUtils.SensorReadingToCSV(
-                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_gps.csv", ","));
+                        "/Users/lukasye/Desktop/result/variation2_gps.csv", ","));
                 imageResultStream.addSink(new PETUtils.DataWrapperToCSV(
-                        "D:\\Projects\\pis_project_ss2023_group2\\carPET\\src\\main\\resources\\result\\variation2_img.csv", ","));
-                dataResultStream.print();
-                imageResultStream.print();
+                        "/Users/lukasye/Desktop/result/variation2_img.csv", ","));
+//                dataResultStream.addSink(new PETUtils.showInGUI())
+//                dataResultStream.print();
+//                imageResultStream.print();
+//                imageResultStream.addSink(new PETUtils.showInGUI_variation(GUI));
 //                imageResultStream.addSink(new PETUtils.saveDataAsImage<ImageWrapper>(ImageOutputPath, "jpg"));
 
             }
